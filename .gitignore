@@ -1,3 +1,4 @@
+.vscode/
 wnd_build/
 CMakeFiles/
 cmake_install.cmake

@@ -1,0 +1,17 @@
+project(hiredis_test)
+cmake_minimum_required()(VERSION, 3.0)
+
+include_directories(
+    ../../../include
+)
+
+find_library(runtime_lib rt /usr/lib /usr/local/lib /usr/lib64 NO_DEFAULT_PATH)
+find_library(hiredis_lib hiredis ../../../lib/debug NO_DEFAULT_PATH)
+
+link_libraries(${runtime_lib}, ${hiredis_lib})
+
+set(
+    SRC_LIST main.cpp
+    ../redisclient.cpp
+)
+add_executable(main, ${SRC_LIST})
