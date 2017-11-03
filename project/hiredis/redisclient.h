@@ -15,6 +15,8 @@
 #include <string.h>  
 #include <assert.h>  
 #include <hiredis/hiredis.h> 
+#include "redisdef.h"
+
 
 class LRedisClient 
 {
@@ -27,13 +29,15 @@ public:
     int Connect2Redis();
     int ReConnect2Redis();
 
-private:
-    void _FreeRes();
-    int _connect();
-    int _Auth(const char* szPassword);
-    int _SelectDB(const char* szIPAdress);
+public:
     int SetString(const char* szKey, const char* szValue);
 	int GetString(const char* szKey, char* szValueOut, int nOutLen);
+
+private:
+    int _FreeRes();
+    int _Connect();
+    int _Auth();
+    int _SelectDB();
 
 private:
     char                        m_szIPAdress[_R_CHAR_IP_LEN];

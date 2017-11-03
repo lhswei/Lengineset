@@ -1,9 +1,10 @@
 #include "redisclient.h"
+#include "lpublic.h"
 
 LRedisClient::LRedisClient()
 {
-    m_szIPAdress = NULL;
-    m_szPassword = NULL;
+    m_szIPAdress[0] = '\0';
+    m_szPassword[0] = '\0';
     m_nPort = 0;
     m_nDBNum = 0;
     m_pRedisContext = NULL;
@@ -17,15 +18,16 @@ LRedisClient::~LRedisClient()
 void LRedisClient::Uninit()
 {
     _FreeRes();
-    m_szIPAdress = NULL;
-    m_szPassword = NULL;
+    m_szIPAdress[0] = '\0';
+    m_szPassword[0] = '\0';
     m_nPort = 0;
     m_nDBNum = 0;
 }
 
-void LRedisClient::_FreeRes
+int LRedisClient::_FreeRes()
 {
     _R_FREE_CONTEXT_OBJECT(m_pRedisContext);
+    return 1;
 }
 
 int LRedisClient::Init(const char* szIPAdress, int nPort, int nDBNum, const char* szPassword)
@@ -51,7 +53,7 @@ Exit0:
     return nResult;
 }
 
-int LRedisClient::_connect()
+int LRedisClient::_Connect()
 {
     int nResult = 0;
 
@@ -84,7 +86,7 @@ int LRedisClient::_Auth()
     LU_PROCESS_ERROR(m_szPassword);
     LU_PROCESS_ERROR(m_pRedisContext);
 
-    pReply = redisCommand(m_pRedisContext, "AUTH %s", m_szPassword);
+    pReply = (redisReply*)redisCommand(m_pRedisContext, "AUTH %s", m_szPassword);
     LU_PROCESS_ERROR(pReply);
 
     nResult = 1;
@@ -109,7 +111,7 @@ int LRedisClient::_SelectDB()
     LU_PROCESS_ERROR(m_szPassword);
     LU_PROCESS_ERROR(m_pRedisContext);
 
-    pReply = redisCommand(m_pRedisContext, "SELECT %d", m_nDBNum);
+    pReply = (redisReply*)redisCommand(m_pRedisContext, "SELECT %d", m_nDBNum);
     LU_PROCESS_ERROR(pReply);
 
     nResult = 1;
@@ -130,13 +132,13 @@ int LRedisClient::Connect2Redis()
 {
 	int nResult = 0;
     
-    nResult = _Connect(m_szIP, m_nPort);
+    nResult = _Connect();
     LU_PROCESS_ERROR(nResult == 1);
     
-    nResult = _Auth(m_szPassword);
+    nResult = _Auth();
     LU_PROCESS_ERROR(nResult == 1);
     
-    nResult  = _SelectDB(m_nDBNum);
+    nResult  = _SelectDB();
     LU_PROCESS_ERROR(nResult == 1);
 
     nResult = 1;
