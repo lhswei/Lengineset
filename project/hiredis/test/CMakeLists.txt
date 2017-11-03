@@ -1,5 +1,7 @@
 project(hiredis_test)
 cmake_minimum_required(VERSION 3.0)
+#cmake -DCMAKE_BUILD_TYPE=Debug
+#set(CMAKE_BUILD_TYPE Debug CACHE STRING "set build type to debug") 
 
 include_directories(
     ../../../include

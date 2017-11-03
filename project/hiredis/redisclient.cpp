@@ -62,7 +62,7 @@ int LRedisClient::_Connect()
 
     m_pRedisContext = redisConnect(m_szIPAdress, m_nPort);
     LU_PROCESS_ERROR(m_pRedisContext);
-    LU_PROCESS_ERROR(m_pRedisContext->err);
+    LU_PROCESS_ERROR(!m_pRedisContext->err);
 
 Exit1:
     nResult = 1;
