@@ -1,3 +1,6 @@
 [submodule "submodule/hiredis"]
 	path = submodule/hiredis
 	url = https://github.com/redis/hiredis
+[submodule "submodule/libevent"]
+	path = submodule/libevent
+	url = https://github.com/libevent/libevent.git

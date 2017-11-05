@@ -123,6 +123,33 @@ hiredis_test/fast:
 	$(MAKE) -f CMakeFiles/hiredis_test.dir/build.make CMakeFiles/hiredis_test.dir/build
 .PHONY : hiredis_test/fast
 
+home/github/jxshare/lset/project/hiredis/redisasyncclient.o: home/github/jxshare/lset/project/hiredis/redisasyncclient.cpp.o
+
+.PHONY : home/github/jxshare/lset/project/hiredis/redisasyncclient.o
+
+# target to build an object file
+home/github/jxshare/lset/project/hiredis/redisasyncclient.cpp.o:
+	$(MAKE) -f CMakeFiles/hiredis_test.dir/build.make CMakeFiles/hiredis_test.dir/home/github/jxshare/lset/project/hiredis/redisasyncclient.cpp.o
+.PHONY : home/github/jxshare/lset/project/hiredis/redisasyncclient.cpp.o
+
+home/github/jxshare/lset/project/hiredis/redisasyncclient.i: home/github/jxshare/lset/project/hiredis/redisasyncclient.cpp.i
+
+.PHONY : home/github/jxshare/lset/project/hiredis/redisasyncclient.i
+
+# target to preprocess a source file
+home/github/jxshare/lset/project/hiredis/redisasyncclient.cpp.i:
+	$(MAKE) -f CMakeFiles/hiredis_test.dir/build.make CMakeFiles/hiredis_test.dir/home/github/jxshare/lset/project/hiredis/redisasyncclient.cpp.i
+.PHONY : home/github/jxshare/lset/project/hiredis/redisasyncclient.cpp.i
+
+home/github/jxshare/lset/project/hiredis/redisasyncclient.s: home/github/jxshare/lset/project/hiredis/redisasyncclient.cpp.s
+
+.PHONY : home/github/jxshare/lset/project/hiredis/redisasyncclient.s
+
+# target to generate assembly for a file
+home/github/jxshare/lset/project/hiredis/redisasyncclient.cpp.s:
+	$(MAKE) -f CMakeFiles/hiredis_test.dir/build.make CMakeFiles/hiredis_test.dir/home/github/jxshare/lset/project/hiredis/redisasyncclient.cpp.s
+.PHONY : home/github/jxshare/lset/project/hiredis/redisasyncclient.cpp.s
+
 home/github/jxshare/lset/project/hiredis/redisclient.o: home/github/jxshare/lset/project/hiredis/redisclient.cpp.o
 
 .PHONY : home/github/jxshare/lset/project/hiredis/redisclient.o
@@ -186,6 +213,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... hiredis_test"
+	@echo "... home/github/jxshare/lset/project/hiredis/redisasyncclient.o"
+	@echo "... home/github/jxshare/lset/project/hiredis/redisasyncclient.i"
+	@echo "... home/github/jxshare/lset/project/hiredis/redisasyncclient.s"
 	@echo "... home/github/jxshare/lset/project/hiredis/redisclient.o"
 	@echo "... home/github/jxshare/lset/project/hiredis/redisclient.i"
 	@echo "... home/github/jxshare/lset/project/hiredis/redisclient.s"

@@ -23,6 +23,16 @@ redisFree((pObj));\
 }                           \
 }while(false)
 
+#define _R_FREE_ASYNC_CONTEXT_OBJECT(pObj)     \
+do                                  \
+{                               \
+if (pObj)                   \
+{                           \
+redisAsyncFree((pObj));\
+(pObj) = NULL;          \
+}                           \
+}while(false)
+
 #define _R_FREE_REPLY_OBJECT(pObj)     \
 do                                  \
 {                               \
@@ -33,7 +43,15 @@ freeReplyObject((pObj));\
 }                           \
 }while(false)
 
-
+#define _R_FREE_EVENT_OBJECT(pObj)     \
+do                                  \
+{                               \
+if (pObj)                   \
+{                           \
+event_base_dispatch((pObj));\
+(pObj) = NULL;          \
+}                           \
+}while(false)
 
 
 #endif

@@ -1,5 +1,21 @@
-#include <stdio.h>
+#ifdef __linux
+#include <unistd.h>
+#else
+#include <synchapi.h >
+#endif
+#include <stdio.h>  
+#include <stdlib.h>  
+#include <stddef.h> 
 #include "../redisclient.h"
+#include "../redisasyncclient.h"
+
+#ifndef L_SLEEP(s)
+#ifdef __linux
+#define L_SLEEP(s) usleep((s)*1000)
+#else
+#define L_SLEEP(s) Sleep((s))
+#endif //__linux
+#endif //L_SLEEP(S)
 
 int main(int argc, char* argv[])
 {
@@ -18,5 +34,26 @@ int main(int argc, char* argv[])
         delete pRedisClient;
         pRedisClient = NULL;
     }
+
+    LRedisAsyncClient* pRedisAsyncClient = new LRedisAsyncClient();
+    if (pRedisAsyncClient)
+    {
+        int nRetCode = pRedisAsyncClient->Init("10.20.77.106", 6379, 2, "kingsoft");
+        if (nRetCode == 1)
+        {
+            pRedisAsyncClient->Connect2Redis();
+        }
+        // int nTick = 0;
+        // while(nTick <= 60)
+        // {
+        //     nTick++;
+        //     L_SLEEP(1000);
+        // }
+        delete pRedisAsyncClient;
+        pRedisAsyncClient = NULL;
+    }
+
+    printf("press any key to countinue...\n");
+    getchar();
     return 0;
 }
