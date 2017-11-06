@@ -26,5 +26,6 @@ set(
     SRC_LIST main.cpp
     ../redisclient.cpp
     ../redisasyncclient.cpp
+    ../redisnoblock.cpp
 )
 add_executable(hiredis_test ${SRC_LIST})

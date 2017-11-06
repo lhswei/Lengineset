@@ -56,11 +56,14 @@ Exit0:
 int LRedisClient::_Connect()
 {
     int nResult = 0;
-
+    timeval timeout;
     LU_PROCESS_SUCCESS(m_pRedisContext);
     LU_PROCESS_ERROR(m_nPort > 1024 && m_nPort < 65534);
 
-    m_pRedisContext = redisConnect(m_szIPAdress, m_nPort);
+    //m_pRedisContext = redisConnect(m_szIPAdress, m_nPort);
+    timerclear(&timeout);
+    timeout.tv_usec = 500000; // 0.5 seconds    
+    m_pRedisContext = redisConnectWithTimeout(m_szIPAdress, m_nPort, timeout);
     LU_PROCESS_ERROR(m_pRedisContext);
     LU_PROCESS_ERROR(!m_pRedisContext->err);
 

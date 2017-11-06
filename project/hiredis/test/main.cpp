@@ -8,6 +8,7 @@
 #include <stddef.h> 
 #include "../redisclient.h"
 #include "../redisasyncclient.h"
+#include "../redisnoblock.h"
 
 #ifndef L_SLEEP(s)
 #ifdef __linux
@@ -51,6 +52,25 @@ int main(int argc, char* argv[])
         // }
         delete pRedisAsyncClient;
         pRedisAsyncClient = NULL;
+    }
+
+    LRedisNOBlock* pRedisNOBlockClient = new LRedisNOBlock();
+    if (pRedisNOBlockClient)
+    {
+        int nRetCode = pRedisNOBlockClient->Init("10.20.77.106", 6379, 2, "kingsoft");
+        if (nRetCode == 1)
+        {
+            pRedisNOBlockClient->Connect2Redis();
+        }
+        int nTick = 0;
+        while(nTick <= 60)
+        {
+            nTick++;
+            pRedisNOBlockClient->Breath();
+            L_SLEEP(1000);
+        }
+        delete pRedisNOBlockClient;
+        pRedisNOBlockClient = NULL;
     }
 
     printf("press any key to countinue...\n");

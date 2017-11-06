@@ -177,6 +177,33 @@ home/github/jxshare/lset/project/hiredis/redisclient.cpp.s:
 	$(MAKE) -f CMakeFiles/hiredis_test.dir/build.make CMakeFiles/hiredis_test.dir/home/github/jxshare/lset/project/hiredis/redisclient.cpp.s
 .PHONY : home/github/jxshare/lset/project/hiredis/redisclient.cpp.s
 
+home/github/jxshare/lset/project/hiredis/redisnoblock.o: home/github/jxshare/lset/project/hiredis/redisnoblock.cpp.o
+
+.PHONY : home/github/jxshare/lset/project/hiredis/redisnoblock.o
+
+# target to build an object file
+home/github/jxshare/lset/project/hiredis/redisnoblock.cpp.o:
+	$(MAKE) -f CMakeFiles/hiredis_test.dir/build.make CMakeFiles/hiredis_test.dir/home/github/jxshare/lset/project/hiredis/redisnoblock.cpp.o
+.PHONY : home/github/jxshare/lset/project/hiredis/redisnoblock.cpp.o
+
+home/github/jxshare/lset/project/hiredis/redisnoblock.i: home/github/jxshare/lset/project/hiredis/redisnoblock.cpp.i
+
+.PHONY : home/github/jxshare/lset/project/hiredis/redisnoblock.i
+
+# target to preprocess a source file
+home/github/jxshare/lset/project/hiredis/redisnoblock.cpp.i:
+	$(MAKE) -f CMakeFiles/hiredis_test.dir/build.make CMakeFiles/hiredis_test.dir/home/github/jxshare/lset/project/hiredis/redisnoblock.cpp.i
+.PHONY : home/github/jxshare/lset/project/hiredis/redisnoblock.cpp.i
+
+home/github/jxshare/lset/project/hiredis/redisnoblock.s: home/github/jxshare/lset/project/hiredis/redisnoblock.cpp.s
+
+.PHONY : home/github/jxshare/lset/project/hiredis/redisnoblock.s
+
+# target to generate assembly for a file
+home/github/jxshare/lset/project/hiredis/redisnoblock.cpp.s:
+	$(MAKE) -f CMakeFiles/hiredis_test.dir/build.make CMakeFiles/hiredis_test.dir/home/github/jxshare/lset/project/hiredis/redisnoblock.cpp.s
+.PHONY : home/github/jxshare/lset/project/hiredis/redisnoblock.cpp.s
+
 main.o: main.cpp.o
 
 .PHONY : main.o
@@ -219,6 +246,9 @@ help:
 	@echo "... home/github/jxshare/lset/project/hiredis/redisclient.o"
 	@echo "... home/github/jxshare/lset/project/hiredis/redisclient.i"
 	@echo "... home/github/jxshare/lset/project/hiredis/redisclient.s"
+	@echo "... home/github/jxshare/lset/project/hiredis/redisnoblock.o"
+	@echo "... home/github/jxshare/lset/project/hiredis/redisnoblock.i"
+	@echo "... home/github/jxshare/lset/project/hiredis/redisnoblock.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
