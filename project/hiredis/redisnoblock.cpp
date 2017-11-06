@@ -74,12 +74,11 @@ int LRedisNOBlock::Connect2Redis()
     pReply = (redisReply*)redisCommand(m_pRedisContext, "SELECT %d", m_nDBNum);
     _R_FREE_REPLY_OBJECT(pReply);
 
-    pReply = (redisReply*)redisCommand(m_pRedisContext, "SUBSCRIBE message");
+    pReply = (redisReply*)redisCommand(m_pRedisContext, "SUBSCRIBE messagechat");
     _R_FREE_REPLY_OBJECT(pReply);
 
     while (!wdone)
     {
-        L_SLEEP(500);
         redisBufferWrite(m_pRedisContext, &wdone);
     }
 Exit1:
@@ -99,7 +98,15 @@ Exit0:
 void LRedisNOBlock::Breath()
 {
     redisReply* pReply =  NULL;
-    int status;
+    int wdone = 0;
+    
+    pReply = (redisReply*)redisCommand(m_pRedisContext, "PING");
+    _R_FREE_REPLY_OBJECT(pReply);
+
+    while (!wdone)
+    {
+        redisBufferWrite(m_pRedisContext, &wdone);
+    }
 
     if (redisBufferRead(m_pRedisContext) == REDIS_ERR)
         return;
@@ -112,7 +119,7 @@ void LRedisNOBlock::Breath()
         {
             printf("command: %s\n", pReply->str);
         }
-        for (int i = 1; i < pReply->elements; i++)
+        for (int i = 0; i < pReply->elements; i++)
         {
             redisReply *pElement = pReply->element[i];
             if (pElement && pElement->type == REDIS_REPLY_STRING)
