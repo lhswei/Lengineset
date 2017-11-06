@@ -59,6 +59,7 @@ int LRedisNOBlock::Connect2Redis()
     int nResult = 0;
     timeval timeout;
     redisReply* pReply =  NULL;
+    int wdone = 0;
 
     LU_PROCESS_SUCCESS(m_pRedisContext);
     LU_PROCESS_ERROR(m_nPort > 1024 && m_nPort < 65534);
@@ -75,16 +76,22 @@ int LRedisNOBlock::Connect2Redis()
 
     pReply = (redisReply*)redisCommand(m_pRedisContext, "SUBSCRIBE message");
     _R_FREE_REPLY_OBJECT(pReply);
+
+    while (!wdone)
+    {
+        L_SLEEP(500);
+        redisBufferWrite(m_pRedisContext, &wdone);
+    }
 Exit1:
     nResult = 1;
 Exit0:
     if (nResult != 1)
     {
-        printf("[LRedisClient] _connect ipadress = %s port = %d faild!\n", m_szIPAdress, m_nPort);
+        printf("[LRedisNOBlock] _connect ipadress = %s port = %d faild!\n", m_szIPAdress, m_nPort);
     }
     else
     {
-        printf("[LRedisClient] _connect ipadress = %s port = %d success!\n", m_szIPAdress, m_nPort);
+        printf("[LRedisNOBlock] _connect ipadress = %s port = %d success!\n", m_szIPAdress, m_nPort);
     }
     return nResult;
 }
@@ -92,19 +99,25 @@ Exit0:
 void LRedisNOBlock::Breath()
 {
     redisReply* pReply =  NULL;
-    redisGetReply(m_pRedisContext, (void*)&pReply);
+    int status;
+
+    if (redisBufferRead(m_pRedisContext) == REDIS_ERR)
+        return;
+    if (redisGetReplyFromReader(m_pRedisContext, (void**)&pReply) == REDIS_ERR)
+        return;
+
     if (pReply)
     {
         if (pReply->type == REDIS_REPLY_STRING)
         {
             printf("command: %s\n", pReply->str);
         }
-        for(int i = 1; i < pReply->elements; i++)
+        for (int i = 1; i < pReply->elements; i++)
         {
-            redisReply* pElement = pReply->element[i];
+            redisReply *pElement = pReply->element[i];
             if (pElement && pElement->type == REDIS_REPLY_STRING)
             {
-                printf("arg %d : %s\n", i, pReply->str);
+                printf("arg %d : %s\n", i, pElement->str);
             }
         }
     }

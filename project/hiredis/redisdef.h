@@ -8,10 +8,24 @@
 #ifndef _LU_REDIS_DEF_H_
 #define _LU_REDIS_DEF_H_
 
+#ifdef __linux
+#include <unistd.h>
+#else
+#include <synchapi.h >
+#endif
+
 #define _R_NAME_LEN               32
 #define _R_LONG_NAME_LEN          64
 #define _R_CHAR_IP_LEN            33
 #define _R_CHAR_PASSWORD_LEN      32
+
+#ifndef L_SLEEP(s)
+#ifdef __linux
+#define L_SLEEP(s) usleep((s)*1000)
+#else
+#define L_SLEEP(s) Sleep((s))
+#endif //__linux
+#endif //L_SLEEP(S)
 
 #define _R_FREE_CONTEXT_OBJECT(pObj)     \
 do                                  \

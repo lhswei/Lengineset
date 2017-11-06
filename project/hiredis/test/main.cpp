@@ -1,22 +1,10 @@
-#ifdef __linux
-#include <unistd.h>
-#else
-#include <synchapi.h >
-#endif
+
 #include <stdio.h>  
 #include <stdlib.h>  
 #include <stddef.h> 
 #include "../redisclient.h"
 #include "../redisasyncclient.h"
 #include "../redisnoblock.h"
-
-#ifndef L_SLEEP(s)
-#ifdef __linux
-#define L_SLEEP(s) usleep((s)*1000)
-#else
-#define L_SLEEP(s) Sleep((s))
-#endif //__linux
-#endif //L_SLEEP(S)
 
 int main(int argc, char* argv[])
 {
