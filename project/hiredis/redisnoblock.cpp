@@ -8,6 +8,7 @@ LRedisNOBlock::LRedisNOBlock()
     m_nPort = 0;
     m_nDBNum = 0;
     m_pRedisContext = NULL;
+    m_nUnSubscribe = 0;
 }
 
 LRedisNOBlock::~LRedisNOBlock()
@@ -76,6 +77,9 @@ int LRedisNOBlock::Connect2Redis()
     pReply = (redisReply*)redisCommand(m_pRedisContext, "SUBSCRIBE messagechat");
     _R_FREE_REPLY_OBJECT(pReply);
 
+    pReply = (redisReply*)redisCommand(m_pRedisContext, "SUBSCRIBE messagechat1");
+    _R_FREE_REPLY_OBJECT(pReply);
+
     while (!wdone)
     {
         redisBufferWrite(m_pRedisContext, &wdone);
@@ -100,6 +104,13 @@ void LRedisNOBlock::Breath()
     redisReply* pReply =  NULL;
     int wdone = 0;
     
+    if (m_nUnSubscribe == 1)
+    {
+        m_nUnSubscribe = 0;
+        pReply = (redisReply*)redisCommand(m_pRedisContext, "UNSUBSCRIBE messagechat");
+        _R_FREE_REPLY_OBJECT(pReply);
+    }
+
     pReply = (redisReply*)redisCommand(m_pRedisContext, "PING");
     _R_FREE_REPLY_OBJECT(pReply);
 
@@ -127,15 +138,25 @@ Exit0:
 
 void LRedisNOBlock::ProcessPing(redisReply* pReply)
 {
-    if (pReply && pReply->type == REDIS_REPLY_ARRAY &&
-        pReply->elements > 0 && pReply->element[0]->type == REDIS_REPLY_STRING)
+    const char* pStr = NULL;
+
+    LU_PROCESS_ERROR(pReply);
+    if(pReply->type == REDIS_REPLY_ARRAY && pReply->elements > 0 && pReply->element[0]->type == REDIS_REPLY_STRING)
     {
-        if (strncmp(pReply->element[0]->str, "PONG", 4) == 0 ||
-            strncmp(pReply->element[0]->str, "pong", 4) == 0)
-        {
-            printf("recv redis pong\n");
-        }
+        pStr = pReply->element[0]->str;
     }
+    else if (pReply->type == REDIS_REPLY_STATUS)
+    {
+        pStr = pReply->str;
+    }
+
+    if (strncmp(pStr, "PONG", 4) == 0 ||
+        strncmp(pStr, "pong", 4) == 0)
+    {
+        printf("recv redis pong\n");
+    }
+Exit0:
+    return;
 }
 
 void LRedisNOBlock::ProcessChannelMsg(redisReply* pReply)
@@ -149,6 +170,7 @@ void LRedisNOBlock::ProcessChannelMsg(redisReply* pReply)
             if (pReply->elements > 2)
             {
                 printf("recv redis message: channel=%s data=%s\n", pReply->element[1]->str, pReply->element[2]->str);
+                m_nUnSubscribe = 1;
             }
         }
         else if (strncmp(pReply->element[0]->str, "SUBSCRIBE", 9) == 0 ||
@@ -157,6 +179,14 @@ void LRedisNOBlock::ProcessChannelMsg(redisReply* pReply)
             if (pReply->elements > 1)
             {
                 printf("redis subscribe success: channel=%s\n", pReply->element[1]->str);
+            }
+        }
+        else if (strncmp(pReply->element[0]->str, "UNSUBSCRIBE", 11) == 0 ||
+        strncmp(pReply->element[0]->str, "unsubscribe", 11) == 0)
+        {
+            if (pReply->elements > 1)
+            {
+                printf("redis UNSUBSCRIBE success: channel=%s\n", pReply->element[1]->str);
             }
         }
     }

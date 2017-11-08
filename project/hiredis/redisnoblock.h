@@ -40,6 +40,7 @@ private:
     int                         m_nPort;
     int                         m_nDBNum;
     redisContext*               m_pRedisContext;
+    int                         m_nUnSubscribe;
 };
 
 
