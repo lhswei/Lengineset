@@ -57,7 +57,6 @@ Exit0:
 int LRedisNOBlock::Connect2Redis()
 {
     int nResult = 0;
-    timeval timeout;
     redisReply* pReply =  NULL;
     int wdone = 0;
 
@@ -84,6 +83,7 @@ int LRedisNOBlock::Connect2Redis()
 Exit1:
     nResult = 1;
 Exit0:
+    _R_FREE_REPLY_OBJECT(pReply);
     if (nResult != 1)
     {
         printf("[LRedisNOBlock] _connect ipadress = %s port = %d faild!\n", m_szIPAdress, m_nPort);
@@ -108,24 +108,57 @@ void LRedisNOBlock::Breath()
         redisBufferWrite(m_pRedisContext, &wdone);
     }
 
-    if (redisBufferRead(m_pRedisContext) == REDIS_ERR)
-        return;
-    if (redisGetReplyFromReader(m_pRedisContext, (void**)&pReply) == REDIS_ERR)
-        return;
-
-    if (pReply)
+    while ((pReply = TryGetReply()) != NULL)
     {
-        if (pReply->type == REDIS_REPLY_STRING)
+        ProcessPing(pReply);
+        ProcessChannelMsg(pReply);
+        _R_FREE_REPLY_OBJECT(pReply);
+    }
+}
+
+redisReply* LRedisNOBlock::TryGetReply()
+{
+    redisReply* pReply = NULL;
+    LU_PROCESS_ERROR(redisBufferRead(m_pRedisContext) != REDIS_ERR);
+    redisGetReplyFromReader(m_pRedisContext, (void**)&pReply);
+Exit0:
+    return pReply;
+}
+
+void LRedisNOBlock::ProcessPing(redisReply* pReply)
+{
+    if (pReply && pReply->type == REDIS_REPLY_ARRAY &&
+        pReply->elements > 0 && pReply->element[0]->type == REDIS_REPLY_STRING)
+    {
+        if (strncmp(pReply->element[0]->str, "PONG", 4) == 0 ||
+            strncmp(pReply->element[0]->str, "pong", 4) == 0)
         {
-            printf("command: %s\n", pReply->str);
+            printf("recv redis pong\n");
         }
-        for (int i = 0; i < pReply->elements; i++)
+    }
+}
+
+void LRedisNOBlock::ProcessChannelMsg(redisReply* pReply)
+{
+    if (pReply && pReply->type == REDIS_REPLY_ARRAY &&
+        pReply->elements > 0 && pReply->element[0]->type == REDIS_REPLY_STRING)
+    {
+        if (strncmp(pReply->element[0]->str, "MESSAGE", 7) == 0 ||
+        strncmp(pReply->element[0]->str, "message", 7) == 0)
         {
-            redisReply *pElement = pReply->element[i];
-            if (pElement && pElement->type == REDIS_REPLY_STRING)
+            if (pReply->elements > 2)
             {
-                printf("arg %d : %s\n", i, pElement->str);
+                printf("recv redis message: channel=%s data=%s\n", pReply->element[1]->str, pReply->element[2]->str);
+            }
+        }
+        else if (strncmp(pReply->element[0]->str, "SUBSCRIBE", 9) == 0 ||
+        strncmp(pReply->element[0]->str, "subscribe", 9) == 0)
+        {
+            if (pReply->elements > 1)
+            {
+                printf("redis subscribe success: channel=%s\n", pReply->element[1]->str);
             }
         }
     }
 }
+

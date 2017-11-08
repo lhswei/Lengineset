@@ -31,7 +31,9 @@ public:
 
 private:
     int _FreeRes();
-
+    void ProcessPing(redisReply* pReply);
+    void ProcessChannelMsg(redisReply* pReply);
+    redisReply*  TryGetReply();
 private:
     char                        m_szIPAdress[_R_CHAR_IP_LEN];
     char                        m_szPassword[_R_CHAR_PASSWORD_LEN];
