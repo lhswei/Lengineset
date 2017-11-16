@@ -1,4 +1,5 @@
 main
+MakeFile
 .vscode/
 wnd_build/
 CMakeFiles/
