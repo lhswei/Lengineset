@@ -3,7 +3,7 @@
 ### my project set
 
 # 1. start cmake
-
+> 开始我的cmake之旅
 # 2. add hiredis module
 
 # 3. add libevent module
@@ -15,6 +15,7 @@
 # 6. add boost module
 ### 下载 boost 库
 > git submodule add https://github.com/boostorg/boost.git boost
+
 > cd boost
 ### 更新子模块
 > git submodule init
@@ -38,8 +39,12 @@
 
 # 7. c++ 连接 mysql api 子模块
 > 下载c++ 版本的源码
+
 > git submodule add https://github.com/mysql/mysql-connector-cpp.git
+
 > cd mysql-connector-cpp/
+
 > 进入下载的目录, -DWITH_BOOST=<Boost location> (我放的目录是 /usr/local/lib libboost_xxx.a这类文件的目录) -DCMAKE_INSTALL_PREFIX=<Install location>
+
 > cmake ./ -DWITH_BOOST=/usr/local/lib -DBoost_INCLUDE_DIR:PATH=/usr/local/include -DCMAKE_INSTALL_PREFIX=/home/cmake_install/mysqlcpp -DBUILD_STATIC=yes
 
