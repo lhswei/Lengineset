@@ -1,7 +1,15 @@
-project(hiredis_test)
+project(main)
 cmake_minimum_required(VERSION 3.0)
 #cmake -DCMAKE_BUILD_TYPE=Debug
 #set(CMAKE_BUILD_TYPE Debug CACHE STRING "set build type to debug") 
+
+IF (WIN32)  
+    MESSAGE(STATUS "Now is windows")  
+ELSEIF (APPLE)  
+    MESSAGE(STATUS "Now is Apple systens.")  
+ELSEIF (UNIX)  
+    MESSAGE(STATUS "Now is UNIX-like OS's. Including aPPLE os x  and CygWin")  
+ENDIF () 
 
 include_directories(
     ../../../include
@@ -28,4 +36,4 @@ set(
     ../redisasyncclient.cpp
     ../redisnoblock.cpp
 )
-add_executable(hiredis_test ${SRC_LIST})
+add_executable(main ${SRC_LIST})
