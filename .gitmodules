@@ -7,3 +7,6 @@
 [submodule "submodule/boost"]
 	path = submodule/boost
 	url = https://github.com/boostorg/boost.git
+[submodule "submodule/mysql-connector-cpp"]
+	path = submodule/mysql-connector-cpp
+	url = https://github.com/mysql/mysql-connector-cpp.git
