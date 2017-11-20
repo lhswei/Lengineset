@@ -1,4 +1,4 @@
-# Ð´´úÂë °á°á×©
+# å†™ä»£ç  æ¬æ¬ç –
 ### Lengineset
 ### my project set
 
@@ -10,25 +10,31 @@
 
 # 4. tcp server/client test
 
-# 5. mysql test c °æ±¾µÄapi
+# 5. mysql test c ç‰ˆæœ¬çš„api
 
 # 6. add boost module
-### ÏÂÔØ boost ¿â
+### ä¸‹è½½ boost åº“
 > git submodule add https://github.com/boostorg/boost.git boost
 > cd boost
-### ¸üÐÂ×ÓÄ£¿é
+### æ›´æ–°å­æ¨¡å—
 > git submodule init
-### ÕâÊÇÒ»¸öºÜÂþ³¤µÄ¹ý³Ì
+### è¿™æ˜¯ä¸€ä¸ªå¾ˆæ¼«é•¿çš„è¿‡ç¨‹
 > git submodule update
-> boostµÄËùÓÐ×ÓÄ£¿éÏÂÍêºó·Ç³£µÄ´ó, windows µÄ git ÔËÐÐ»á³¬¼¶Âý
-> ËùÒÔÏÂÍêºó£¬ÎÒ»á°Ñboost·Åµ½ÆäËûµØ·½È¥£¬ÐèÒªÄÄÐ©¿â±àÍêºóÔÚ·Åµ½ ¸ùÄ¿Â¼µÄ include ºÍ lib ÏàÓ¦ÎÄ¼þ¼ÐÏÂ
-> ¿ÉÒÔÔÚÏÂÔØÖ®Ç°Ê¹ÓÃ git config --add core.compression -1 [-1~9]
-> -1 ÒÔ zlib ÎªÄ¬ÈÏÑ¹Ëõ¿â£¬0 ±íÊ¾²»½øÐÐÑ¹Ëõ£¬1..9 ÊÇÑ¹ËõËÙ¶ÈÓë×îÖÕ»ñµÃÎÄ¼þ´óÐ¡µÄ²»Í¬³Ì¶ÈµÄÈ¨ºâ£¬Êý×ÖÔ½´ó£¬Ñ¹ËõÔ½Âý£¬µ±È»µÃµ½µÄÎÄ¼þ»áÔ½Ð¡¡£
-### Ö´ÐÐ(µÃµ½b2)
+> boostçš„æ‰€æœ‰å­æ¨¡å—ä¸‹å®ŒåŽéžå¸¸çš„å¤§, windows çš„ git è¿è¡Œä¼šè¶…çº§æ…¢
+> æ‰€ä»¥ä¸‹å®ŒåŽï¼Œæˆ‘ä¼šæŠŠboostæ”¾åˆ°å…¶ä»–åœ°æ–¹åŽ»ï¼Œéœ€è¦å“ªäº›åº“ç¼–å®ŒåŽåœ¨æ”¾åˆ° æ ¹ç›®å½•çš„ include å’Œ lib ç›¸åº”æ–‡ä»¶å¤¹ä¸‹
+> å¯ä»¥åœ¨ä¸‹è½½ä¹‹å‰ä½¿ç”¨ git config --add core.compression -1 [-1~9]
+> -1 ä»¥ zlib ä¸ºé»˜è®¤åŽ‹ç¼©åº“ï¼Œ0 è¡¨ç¤ºä¸è¿›è¡ŒåŽ‹ç¼©ï¼Œ1..9 æ˜¯åŽ‹ç¼©é€Ÿåº¦ä¸Žæœ€ç»ˆèŽ·å¾—æ–‡ä»¶å¤§å°çš„ä¸åŒç¨‹åº¦çš„æƒè¡¡ï¼Œæ•°å­—è¶Šå¤§ï¼ŒåŽ‹ç¼©è¶Šæ…¢ï¼Œå½“ç„¶å¾—åˆ°çš„æ–‡ä»¶ä¼šè¶Šå°ã€‚
+### æ‰§è¡Œ(å¾—åˆ°b2)
 > ./bootstrap.sh --prefix=/usr/local
+### ç¼–è¯‘æ‰€æœ‰
+> ./b2 install --with=all
+### æŒ‡å®šç¼–è¯‘
+> ./b2 install --with=thread
 
-# 7. c++ Á¬½Ó mysql api ×ÓÄ£¿é
-> ÏÂÔØc++ °æ±¾µÄÔ´Âë
+# 7. c++ è¿žæŽ¥ mysql api å­æ¨¡å—
+> ä¸‹è½½c++ ç‰ˆæœ¬çš„æºç 
 > git submodule add https://github.com/mysql/mysql-connector-cpp.git
-
+> cd mysql-connector-cpp/
+> è¿›å…¥ä¸‹è½½çš„ç›®å½•, -DWITH_BOOST=<Boost location> (æˆ‘æ”¾çš„ç›®å½•æ˜¯ /usr/local/lib libboost_xxx.aè¿™ç±»æ–‡ä»¶çš„ç›®å½•) -DCMAKE_INSTALL_PREFIX=<Install location>
+> cmake ./ -DWITH_BOOST=/usr/local/lib -DBoost_INCLUDE_DIR:PATH=/usr/local/include -DCMAKE_INSTALL_PREFIX=/home/cmake_install/mysqlcpp -DBUILD_STATIC=yes
 
