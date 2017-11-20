@@ -9,7 +9,8 @@
 
 4. tcp server/client test
 
-5. mysql test 
+# 5. mysql test 
+这个版本用的是c 版本的连接
 
 6. add boost module
 # 下载 boost 库
