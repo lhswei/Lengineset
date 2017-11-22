@@ -46,5 +46,7 @@
 
 > 进入下载的目录, -DWITH_BOOST=<Boost location> (我放的目录是 /usr/local/lib libboost_xxx.a这类文件的目录) -DCMAKE_INSTALL_PREFIX=<Install location>
 
-> cmake ./ -DWITH_BOOST=/usr/local/lib -DBoost_INCLUDE_DIR:PATH=/usr/local/include -DCMAKE_INSTALL_PREFIX=/home/cmake_install/mysqlcpp -DBUILD_STATIC=yes
+> cmake ./ -DCMAKE_BUILD_TYPE=Debug -DWITH_BOOST=/usr/local/lib -DBoost_INCLUDE_DIR:PATH=/usr/local/include -DCMAKE_INSTALL_PREFIX=/home/cmake_install/mysqlcpp -DBUILD_STATIC=yes
 
+# c++ libcurl 
+> get json
