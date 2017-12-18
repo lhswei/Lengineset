@@ -51,5 +51,9 @@
 # c++ libcurl 
 > get json
 
+# lua5.3
 
+LUA_BUILD_AS_DLL
+
+> cmake ./ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/home/cmake_install/lua53
 
