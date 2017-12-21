@@ -6,6 +6,13 @@
 #include "../redisasyncclient.h"
 #include "../redisnoblock.h"
 
+struct ST_TEST
+{
+    int a;
+    char ch[16];
+    int b;
+};
+
 int main(int argc, char* argv[])
 {
     LRedisClient* pRedisClient = new LRedisClient();
@@ -18,6 +25,29 @@ int main(int argc, char* argv[])
             const char* szKey = "lhswei_4_test1";
             pRedisClient->GetString(szKey, szOut, 64);
             printf("%s = %s\n", szKey, szOut);
+
+            int nLent = sizeof(ST_TEST);
+
+            // ST_TEST st;
+            
+            // memset(&st, 0, nLent);
+
+            // st.a = 7;
+            // st.b = 5;
+            // sprintf(st.ch, "hellow");
+
+            // void *pBuffer = static_cast<void*>(&st);
+            // nRetCode = pRedisClient->HSetByte("module1", "luhengsi1", pBuffer, nLent);
+            // printf("HSetByte nRetCode = %d\n", nRetCode);
+
+            // nRetCode = pRedisClient->SetByte("bytetest1", pBuffer, nLent);
+            // printf("SetByte nRetCode = %d\n", nRetCode);
+
+            // ST_TEST st1;
+            // void *pBuffer1 = static_cast<void*>(&st1);
+            // memset(pBuffer1, 0, nLent);
+            // int nGetLen = pRedisClient->HGetByte("module1", "luhengsi1", pBuffer1, nLent);
+            // printf("HGetByte: nGetLen = %d, a = %d, b = %d, ch = %s\n", nGetLen, st1.a, st1.b, st1.ch);
         }
 
         delete pRedisClient;

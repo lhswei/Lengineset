@@ -33,6 +33,11 @@ public:
     int SetString(const char* szKey, const char* szValue);
 	int GetString(const char* szKey, char* szValueOut, int nOutLen);
 
+    int HSetByte(const char*szModule, const char* szKey, void* pBuffer, int nBufferLen);
+    int HGetByte(const char*szModule, const char* szKey, void* pBuffer, int nBufferLen);
+    int SetByte(const char* szKey, void* pBuffer, int nBufferLen);
+    int GetByte(const char* szKey, void* pBuffer, int nBufferLen);
+
 private:
     int _FreeRes();
     int _Connect();

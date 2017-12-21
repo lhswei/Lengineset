@@ -149,6 +149,7 @@ void LRedisNOBlock::ProcessPing(redisReply* pReply)
     {
         pStr = pReply->str;
     }
+    LU_PROCESS_ERROR(pStr);
 
     if (strncmp(pStr, "PONG", 4) == 0 ||
         strncmp(pStr, "pong", 4) == 0)

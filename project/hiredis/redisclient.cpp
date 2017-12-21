@@ -212,3 +212,87 @@ Exit0:
 	_R_FREE_REPLY_OBJECT(pReply);
 	return nResult;
 }
+
+int LRedisClient::HSetByte(const char*szModule, const char* szKey, void* pBuffer, int nBufferLen)
+{
+	int            nResult  = 0;
+	redisReply*	   pReply = NULL;
+
+    LU_PROCESS_ERROR(szModule);
+	LU_PROCESS_ERROR(szKey);
+	LU_PROCESS_ERROR(pBuffer);
+	LU_PROCESS_ERROR(nBufferLen > 0);
+
+    pReply = (redisReply*)redisCommand(m_pRedisContext, "HSET %s %s %b", szModule, szKey, pBuffer, nBufferLen);
+	LU_PROCESS_ERROR(pReply);
+	LU_PROCESS_ERROR(pReply->type != REDIS_REPLY_ERROR);
+	nResult = 1;
+Exit0:
+	_R_FREE_REPLY_OBJECT(pReply);
+	return nResult;
+}
+
+int LRedisClient::HGetByte(const char*szModule, const char* szKey, void* pBuffer, int nBufferLen)
+{
+	int            nResult  = 0;
+	redisReply*	   pReply = NULL;
+    int            nLen     = 0;
+    LU_PROCESS_ERROR(szModule);
+	LU_PROCESS_ERROR(szKey);
+	LU_PROCESS_ERROR(pBuffer);
+	LU_PROCESS_ERROR(nBufferLen > 0);
+
+    pReply = (redisReply*)redisCommand(m_pRedisContext, "HGET %s %s", szModule, szKey);
+	LU_PROCESS_ERROR(pReply);
+	LU_PROCESS_ERROR(pReply->type == REDIS_REPLY_STRING);
+    nLen = pReply->len >= nBufferLen ? nBufferLen : pReply->len;
+    memcpy(pBuffer, pReply->str, nLen);
+
+	nResult = nLen;
+Exit0:
+	_R_FREE_REPLY_OBJECT(pReply);
+	return nResult;
+}
+
+int LRedisClient::SetByte(const char* szKey, void* pBuffer, int nBufferLen)
+{
+	int            nResult  = 0;
+	redisReply*	   pReply = NULL;
+    char *cmd;
+    int len = 0;
+
+	LU_PROCESS_ERROR(szKey);
+	LU_PROCESS_ERROR(pBuffer);
+	LU_PROCESS_ERROR(nBufferLen > 0);
+
+    pReply = (redisReply*)redisCommand(m_pRedisContext, "SET %s %b", szKey, pBuffer ,(size_t)nBufferLen);
+	LU_PROCESS_ERROR(pReply);
+	LU_PROCESS_ERROR(pReply->type != REDIS_REPLY_ERROR);
+	nResult = 1;
+Exit0:
+	_R_FREE_REPLY_OBJECT(pReply);
+	return nResult;
+}
+
+
+int LRedisClient::GetByte(const char* szKey, void* pBuffer, int nBufferLen)
+{
+	int            nResult  = 0;
+	redisReply*	   pReply = NULL;
+    int            nLen     = 0;
+
+	LU_PROCESS_ERROR(szKey);
+	LU_PROCESS_ERROR(pBuffer);
+	LU_PROCESS_ERROR(nBufferLen > 0);
+
+    pReply = (redisReply*)redisCommand(m_pRedisContext, "GET %s", szKey);
+	LU_PROCESS_ERROR(pReply);
+	LU_PROCESS_ERROR(pReply->type == REDIS_REPLY_STRING);
+    nLen = pReply->len >= nBufferLen ? nBufferLen : pReply->len;
+    memcpy(pBuffer, pReply->str, nLen);
+
+	nResult = nLen;
+Exit0:
+	_R_FREE_REPLY_OBJECT(pReply);
+	return nResult;
+}
