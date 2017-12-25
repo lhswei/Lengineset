@@ -17,8 +17,8 @@ int main(int, char*[])
         console->info("Welcome to spdlog!");
         console->error("Some error message with arg{}..", 1);
 
-        LUFILE::MKdirIsNotExist("logs", console);
-        // LUFILE::RMdirIsExist("abc", console);
+        LU_FILE::MKdirIsNotExist("logs", console);
+        // LU_FILE::RMdirIsExist("abc", console);
 
         // Formatting examples
         // console->warn("Easy padding in numbers like {:08d}", 12);

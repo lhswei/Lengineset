@@ -46,7 +46,7 @@
 #define LU_FS_SLASH	L'/'
 #define LU_FS_BSLASH	L'\\'
 
-namespace LUFILE
+namespace LU_FILE
 {
 
 class LConsole 
