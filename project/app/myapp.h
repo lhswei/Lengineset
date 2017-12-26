@@ -42,7 +42,7 @@ private:
 };
 
 
-class LuMyApp: public MyApp, public LuMyAppInterface
+class LuMyApp: virtual public MyApp, virtual public LuMyAppInterface
 {
 public:
     LuMyApp();

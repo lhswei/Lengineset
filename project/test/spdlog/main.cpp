@@ -18,6 +18,7 @@ int main(int, char*[])
         console->error("Some error message with arg{}..", 1);
 
         LU_FILE::MKdirIsNotExist("logs", console);
+        LU_FILE::MKdirIsNotExist("abc");
         // LU_FILE::RMdirIsExist("abc", console);
 
         // Formatting examples

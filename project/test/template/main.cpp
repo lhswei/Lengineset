@@ -51,6 +51,10 @@ int main(int argc, char *argv[])
     vT1.clear();
     printf("======================6\n");
 
+    auto sp = std::make_shared<LConsole>();
+    tf_defaultparam("fuck what happen!", sp);
+    tf_defaultparam("it work............!!!\n", 0);
+    tf_defaultparam("it work............!!\n");
     return 0;
 }
 

@@ -158,7 +158,8 @@ inline int MKdirIsNotExist(std::string fpath, const T& console)
     return nResult;
 } 
 
-inline int MKdirIsNotExist(std::string fpath)
+template <int n = 0>
+inline int MKdirIsNotExist(std::string fpath, const int& p = n)
 {
     int nResult = 0;
 
@@ -190,7 +191,8 @@ Exit0:
     return nResult;
 } 
 
-inline int RMdirIsExist(std::string fpath)
+template <int n = 0>
+inline int RMdirIsExist(std::string fpath, const int& p = n)
 {
     int nResult = 0;
 
