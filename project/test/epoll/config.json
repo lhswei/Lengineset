@@ -1,0 +1,7 @@
+{
+    "ip": "10.20.77.106",
+    "port": 8869,
+    "maxwait": 5,
+    "fdssize": 1000,
+    "eventepolls": 100
+}

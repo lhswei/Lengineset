@@ -23,7 +23,7 @@ namespace LU_PLATFORM
 #ifdef _WIN32
         ::Sleep(uMilliseconds);
 #else
-        usleep(uMilliseconds * MILLIS_PER_SECONDE);
+        usleep(uMilliseconds * 1000);
 #endif
     }
 
