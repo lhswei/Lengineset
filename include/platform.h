@@ -5,7 +5,7 @@
   #error This library needs at least a C++11 compliant compiler
 #endif
 
-#ifdef __WIN32
+#ifdef _WIN32
 
 #include <windows.h>
 
