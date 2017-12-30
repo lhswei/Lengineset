@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 class Base;
 void tprint(Base* p);
@@ -66,6 +67,14 @@ int main(int argc, char *argv[])
     Base* pt  = new Driver();
     delete pt;
     printf("\n");
+
+    int i = 0;
+    for(i = 0; i < 2 ; i++)
+    {
+        fork();
+        printf("A\n");
+    }
+
 	return 0;
 
 }
