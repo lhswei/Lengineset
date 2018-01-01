@@ -39,22 +39,25 @@ public:
     virtual void LoopFps() override
     {
 
+        // static int ticksec = 0;
+        // printf("[LoopFps] ticksec: %d\n", ticksec++);
     }
     // 每秒调用
     virtual void LoopSec() override
     {
-                static int ticksec = 0;
+        static int ticksec = 0;
         ++ticksec;
-        printf("[LoopMSec] ticksec: %d\n", ticksec);
+        printf("[LoopSec] ticksec: %d\n", ticksec);
         if (ticksec >= 10)
         {
-            Exit("[LoopMSec] time out.\n");
+            Exit("[LoopSec] time out.\n");
         }
     }
     // 每毫秒调用          
     virtual void LoopMSec() override
     {
-
+        // static int ticksec = 0;
+        // printf("[LoopMSec] ticksec: %d\n", ticksec++);
     }       
 };
 

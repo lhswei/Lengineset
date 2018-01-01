@@ -3,9 +3,7 @@
 
 
 #define MILLIS_PER_SECONDE    1000
-#define GAME_FPS        20
-
-static const unsigned s_fpsinterval = (MILLIS_PER_SECONDE / GAME_FPS);
+#define GAME_FPS        18
 
 
 #endif //_MYAPP_DEF_H_

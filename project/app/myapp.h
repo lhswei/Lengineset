@@ -2,6 +2,9 @@
 #define _MYAPP_H_
 
 #include "myappdef.h"
+#include "ltimer.h"
+
+typedef std::chrono::duration< int64_t, ratio< 1,(int)GAME_FPS > > LT_GAME_FPS;
 
 class MyApp
 {
@@ -22,9 +25,7 @@ public:
     MyAppInterface() {};
     virtual ~MyAppInterface() {};
 
-    virtual void SetFPSInterval(unsigned uMilliseconds) = 0;
-    virtual unsigned GetFPSInterval() = 0;
-
+    virtual int GetFps() = 0;
 };
 
 class LuMyAppInterface: public MyAppInterface
@@ -33,12 +34,7 @@ public:
     LuMyAppInterface() {};
     virtual ~LuMyAppInterface() {};
 
-    virtual void SetFPSInterval(unsigned uMilliseconds) override {m_nFpsInterval = uMilliseconds;}
-    virtual unsigned GetFPSInterval() override {return m_nFpsInterval;}
-
-private:
-    unsigned m_nFpsInterval = s_fpsinterval;
-
+    virtual int GetFps() override final{return GAME_FPS;}
 };
 
 
@@ -58,8 +54,11 @@ public:
     virtual void LoopSec() = 0;             // 每秒调用
     virtual void LoopMSec() = 0;            // 每毫秒调用
 private:
-    bool    m_bRun = false;
-
+    bool                                                        m_bRun = false;
+    LUTimer<std::chrono::seconds>                               m_timerSec;
+    LUTimer<LT_GAME_FPS>                                        m_timerFps;
 };
 
 #endif //_MYAPP_H_
+
+

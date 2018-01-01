@@ -1,5 +1,5 @@
 #include "myapp.h"
-#include "platform.h"
+#include <thread>
 
 LuMyApp::LuMyApp()
 {
@@ -14,7 +14,8 @@ LuMyApp::~LuMyApp()
 int LuMyApp::Init()
 {
     int nResult = 0;
-
+    m_timerSec.initialize();
+    m_timerFps.initialize();
     nResult = 1;
     return nResult;
 }
@@ -39,19 +40,13 @@ void LuMyApp::Run()
 
 void LuMyApp::Loop()
 {
-    static unsigned tickmsec = s_fpsinterval;
-    static unsigned tickfps = GAME_FPS;
     LoopMSec();
-    if((++tickmsec) >= GetFPSInterval())
-    {
-        tickmsec = 0;
+
+    if(m_timerFps.ticking())
         LoopFps();
-        if((++tickfps) >= GAME_FPS)
-        {
-            tickfps = 0;
-            LoopSec();
-        }
-    }
+
+    if(m_timerSec.ticking())
+        LoopSec();
 }
 
 void LuMyApp::Exit(const char *reason/* = NULL*/)

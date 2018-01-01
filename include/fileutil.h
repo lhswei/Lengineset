@@ -3,9 +3,7 @@
 #ifndef _L_FILE_UTIL_H_
 #define _L_FILE_UTIL_H_
 
-#if __cplusplus < 201100L
-  #error This library needs at least a C++11 compliant compiler
-#endif
+#include "platform.h"
 
 #ifdef _WIN32
 // windows

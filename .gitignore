@@ -8,3 +8,6 @@ CMakeCache.txt
 *.so
 *.log
 *.o
+*.exe
+*.ilk
+*.pdb
