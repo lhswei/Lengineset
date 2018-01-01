@@ -42,10 +42,10 @@ void LuMyApp::Loop()
 {
     LoopMSec();
 
-    while(m_timerFps.ticking())
+    if(m_timerFps.ticking())
         LoopFps();
 
-    while(m_timerSec.ticking())
+    if(m_timerSec.ticking())
         LoopSec();
 }
 
