@@ -48,7 +48,7 @@ ENDIF ()
 # 建议先建立 mingw_build 到 mingw_build 目录里面用 cmake -DCMAKE_BUILD_TYPE=Debug -G   "MinGW Makefiles" ../
 # mingw32-make.exe 如果没有make.exe
 #cmake -G   "NMake Makefiles" . # 先到vcvars64.bat所在的目录用CMD命令 运行 vcvars64.bat， 然后切换会 CMakeLists.txt 所在的目录执行 nmake
-# 建议先建立 wnd_build 到 wnd_build 目录里面用 cmake -G   "NMake Makefiles" ../
+# 建议先建立 wnd_build 到 wnd_build 目录里面用 cmake -DCMAKE_BUILD_TYPE=Debug -G "NMake Makefiles" ../
 
 #cmake -DCMAKE_BUILD_TYPE=Debug
 SET(CMAKE_BUILD_TYPE Debug CACHE STRING "set build type to debug")
