@@ -62,7 +62,7 @@ public:
 
     void initialize()
     {
-        reset();
+        LUClock<T>::reset();
         m_pass = high_resolution_clock::now();
         m_ticker = 0;
     }
