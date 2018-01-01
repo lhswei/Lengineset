@@ -82,7 +82,7 @@ public:
         }
 
 
-        if(m_ticker <= 0)
+        if(m_ticker < 0)
             return false;
 
         --m_ticker;
