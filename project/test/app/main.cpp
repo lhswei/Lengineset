@@ -39,8 +39,8 @@ public:
     virtual void LoopFps() override
     {
 
-        // static int ticksec = 0;
-        // printf("[LoopFps] ticksec: %d\n", ticksec++);
+        static int tickfps = 0;
+        printf("[LoopFps] tickfps: %d\n", ++tickfps);
     }
     // 每秒调用
     virtual void LoopSec() override
@@ -56,8 +56,8 @@ public:
     // 每毫秒调用          
     virtual void LoopMSec() override
     {
-        // static int ticksec = 0;
-        // printf("[LoopMSec] ticksec: %d\n", ticksec++);
+        // static int tickmsec = 0;
+        // printf("[LoopMSec] tickmsec: %d\n", ++tickmsec);
     }       
 };
 
@@ -67,6 +67,8 @@ int main(int argc, char *argv[])
     app.Init();
     app.Run();
     app.UnInit();
+
+    std::cin.get();
 
     return 0;
 }

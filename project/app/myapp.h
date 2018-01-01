@@ -4,7 +4,7 @@
 #include "myappdef.h"
 #include "ltimer.h"
 
-typedef std::chrono::duration< int64_t, ratio< 1,(int)GAME_FPS > > LT_GAME_FPS;
+typedef std::chrono::duration<int64_t, ratio<1,(int)(GAME_FPS)>> LT_GAME_FPS;
 
 class MyApp
 {
