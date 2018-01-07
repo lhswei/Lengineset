@@ -53,5 +53,10 @@
 
 # lua5.3
 
-> cmake ./ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/home/cmake_install/lua53
+linux  
+> cmake ./ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/home/cmake_install/lua53    
+
+windows namke  
+> cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=./cmake_install -G "NMake Makefiles" ../   
+
 
