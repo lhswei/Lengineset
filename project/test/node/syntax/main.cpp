@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <string>
 #include <unistd.h>
 
 class Base;
@@ -44,8 +45,8 @@ public:
 
 void tprint(Base* p)
 {
-    p->print();
-    p->echo();
+    // p->print();
+    // p->echo();
 }
 
 
@@ -57,8 +58,16 @@ char* get_str()
 
 void new_big()
 {
-    char big[1024*1024*10];
+    char big[1024*1024*10]; // 根据系统的不同，函数栈的大小不一样。在栈上的数据大小超过了函数栈的大小，程序运行了就有可能引发崩溃。
     memset(big, 0, sizeof(big));
+}
+
+void new_array()
+{
+    std::string* pal = new std::string[4];  // 调用了new []
+    pal[0].assign("a");
+    printf("\n%s\n", pal[0].c_str());
+    delete pal; // 调用delete 而非 delete [] 是未定义的行为。不可取。
 }
 
 int main(int argc, char *argv[])
@@ -75,9 +84,14 @@ int main(int argc, char *argv[])
     // char *p = get_str();
     // printf("%s\n", p);
 
-    // Base* pt  = new Driver();
-    // delete pt;
-    // printf("\n");
+    Driver* pd  = new Driver();
+    pd->echo();
+    Base* pb = dynamic_cast<Base*>(pd);
+    pb->echo();
+    delete pd;
+    printf("\n");
+
+    new_array();
 
     // int i = 0;
     // for(i = 0; i < 2 ; i++)
@@ -88,7 +102,7 @@ int main(int argc, char *argv[])
 
     // printf("%d\n", sizeof(no_st));
     
-    new_big();
+    // new_big();
 	return 0;
 
 }
