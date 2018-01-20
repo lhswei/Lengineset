@@ -125,7 +125,7 @@ Exit0:
 }
 
 template<typename T>
-inline int MKdirIsNotExist(std::string fpath, const T& console)
+int MKdirIsNotExist(std::string fpath, const T& console)
 {
     int nResult = 1;
     int nRetCode = 0;
@@ -157,7 +157,7 @@ inline int MKdirIsNotExist(std::string fpath, const T& console)
 } 
 
 template <int n = 0>
-inline int MKdirIsNotExist(std::string fpath, const int& p = n)
+int MKdirIsNotExist(std::string fpath, const int& p = n)
 {
     int nResult = 0;
 
@@ -168,7 +168,7 @@ inline int MKdirIsNotExist(std::string fpath, const int& p = n)
 } 
 
 template<typename T>
-inline int RMdirIsExist(std::string fpath, const T& console)
+int RMdirIsExist(std::string fpath, const T& console)
 {
     int nResult = 0;
     int nRetCode = 0;
@@ -190,7 +190,7 @@ Exit0:
 } 
 
 template <int n = 0>
-inline int RMdirIsExist(std::string fpath, const int& p = n)
+int RMdirIsExist(std::string fpath, const int& p = n)
 {
     int nResult = 0;
 
