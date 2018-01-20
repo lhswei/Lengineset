@@ -52,7 +52,7 @@ class LConsole
 public:
     LConsole() {}
     ~LConsole() {}
-    inline int info(const char *format, ...)
+    int info(const char *format, ...)
     {
         va_list ap;
         va_start(ap, format);
@@ -64,7 +64,7 @@ public:
 
 };
 
-inline int ErrLog(const char *format, ...)
+int ErrLog(const char *format, ...)
 {
     va_list ap;
     fprintf(stderr, "%s: Line %d\n", __FILE__, __LINE__);
