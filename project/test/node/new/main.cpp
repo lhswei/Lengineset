@@ -32,6 +32,7 @@ public:
     {
         std::cout << "in our own operator delete." << std::endl;
         std::cout << "We should do nothing in operator delete." << std::endl;
+        // 由于在main函数里，申请的内存空间是函数栈上的
         // 如果取消下一行的注释，程序会在执行时crash
         // ::operator delete(p);
     }
