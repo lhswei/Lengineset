@@ -68,7 +68,9 @@ int main(int argc, char *argv[])
 
     // T_New tn;
 
-    // t_array(11);
+    // int n;
+    // std::cin >> n;
+    // t_array((size_t)n);
 
     return 0;
 }
