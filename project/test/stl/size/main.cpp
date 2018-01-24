@@ -5,7 +5,7 @@
 
 void t_sizeof_vector()
 {
-    std::vector<int> v;
+    std::vector<int> v(10);
     std::cout << "sizeof(std::vector<int>) = " << sizeof(std::vector<int>)
               << ": sizeof(v) = " << sizeof(v)
               << ": v.size() = " << v.size()
@@ -35,6 +35,9 @@ void t_sizeof_vector()
 
 void t_sizeof_map()
 {
+    void* p = NULL;
+    std::cout << "sizeof(p) = " << sizeof(p) << std::endl;
+
     std::map<int, int> m;
     std::cout << "sizeof(std::map<int, int>) = " << sizeof(std::map<int, int>)
               << ": sizeof(m) = " << sizeof(m)
