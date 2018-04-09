@@ -59,4 +59,6 @@ linux
 windows namke  
 > cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=./cmake_install -G "NMake Makefiles" ../   
 
+new work beging!
+> 2018.04.09 netease go!
 
