@@ -13,3 +13,8 @@ CMakeCache.txt
 *.exe
 *.ilk
 *.pdb
+*.tlog
+cmake_build/
+.vs_lua/
+luacmake_build.*
+*.lib

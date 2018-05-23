@@ -2,6 +2,7 @@
 #include "luluadef.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <direct.h>  
 
 int g_Add(lua_State *L)
 {
@@ -31,10 +32,26 @@ int main(int argc, char *argv[])
 
     luaL_register(luaEnv, "glib", lib);
 
-    int nRetCode = luaL_dofile(luaEnv, "./test.lua");
+	char *buffer;
+	char paht[256] = { 0 };
+	//也可以将buffer作为输出参数  
+	if ((buffer = getcwd(NULL, 0)) == NULL)
+	{
+		perror("getcwd error");
+	}
+	else
+	{
+		sprintf(paht, "%s\\test.lua", buffer);
+		printf("%s\n", buffer);
+		free(buffer);
+	}
+
+    int nRetCode = luaL_dofile(luaEnv, paht);
     if(nRetCode)
     {
         printf("error pcall:\n %s\n", luaL_tolstring(luaEnv, -1, NULL));
+
+
     }
 
     lua_getglobal(luaEnv, "subtest");
@@ -52,7 +69,7 @@ int main(int argc, char *argv[])
 
     lua_close(luaEnv);
 
-    // getchar();
+    getchar();
     return 0;
 }
 
