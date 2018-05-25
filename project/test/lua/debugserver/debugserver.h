@@ -35,6 +35,8 @@
 struct lua_State;
 class DebugServerWrapper;
 
+enum class DBG_RUN_STATE {DBG_NONE, DBG_DETACH, DGB_ATTACH};
+
 struct RegType
 {
     const char *name;
@@ -52,17 +54,20 @@ public:
     int StoprServer();
     int Send(std::string msg);
     int Recv(std::string& msg);
-    int DisConnect();
-    void AcceptThread();
+    int Dettach();
+    void SetRunState(DBG_RUN_STATE st);
+    bool CheckRunState(DBG_RUN_STATE st);
 private:
     int InitServer();
+    void AcceptThread();
     int UnInit();
 private:
     SOCKET m_nSocketLisent = INVALID_SOCKET;
     SOCKET m_nSocketClient = INVALID_SOCKET;
     short m_nPort = -1;
     std::mutex m_mtx;
-    std::thread* m_pThread = nullptr;
+    std::thread& m_Thread;
+    DBG_RUN_STATE m_dbgstate;
 };
 
 

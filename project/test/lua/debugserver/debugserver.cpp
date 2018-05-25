@@ -9,37 +9,44 @@ extern "C" {
 
 void DebugServer::AcceptThread()
 {
-    if (m_pThread)
+    if (CheckRunState(DBG_RUN_STATE::DGB_ATTACH))
+        return;
+
+    if (m_nSocketClient > 0)
     {
-        delete m_pThread;
-        m_pThread = nullptr;
+        ::closesocket(m_nSocketClient);
+        m_nSocketClient = INVALID_SOCKET;
+    }
+
+    if (m_Thread.joinable())
+    {   
+        m_Thread.join();
     }
 
     auto fThread = [this]() -> void {
-        while (this->m_nSocketClient < 0)
+        while (this->m_nSocketClient < 0 && this->m_nSocketLisent >= 0)
         {
-            try
+            sockaddr_in sockaddrClient;
+            int nRetCode = 0;
+            int nsin_size = sizeof(struct sockaddr_in);
+            this->SetRunState(DBG_RUN_STATE::DBG_DETACH);
+            this->m_nSocketClient = ::accept(this->m_nSocketLisent, (struct sockaddr *)&sockaddrClient, &nsin_size);
+            if (this->m_nSocketClient >= 0)
             {
-                // using a local lock_guard to lock mtx guarantees unlocking on destruction / exception:
-                std::lock_guard<std::mutex> lck(this->m_mtx);
-                sockaddr_in sockaddrClient;
-                int nRetCode = 0;
-                int nsin_size = sizeof(struct sockaddr_in);
-                this->m_nSocketClient = accept(this->m_nSocketLisent, (struct sockaddr *)&sockaddrClient, &nsin_size);
-                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                this->SetRunState(DBG_RUN_STATE::DGB_ATTACH);
+                printf("debug> attach success.\n");
             }
-            catch (std::logic_error &)
-            {
-                printf("[exception caught]\n");
-                break;
-            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         }
     };
-    m_pThread = new std::thread(fThread);
+    m_Thread = std::thread(fThread);
 }
 
 // debugserver
 DebugServer::DebugServer()
+:m_dbgstate(DBG_RUN_STATE::DBG_NONE),
+m_Thread(std::thread())
 {
 
 }
@@ -51,24 +58,23 @@ DebugServer::~DebugServer()
 
 int DebugServer::UnInit()
 {
-    if (m_pThread)
-    {   
-        delete m_pThread;
-        m_pThread = nullptr;
-    }
-
     if (m_nSocketClient > 0)
     {
-        closesocket(m_nSocketClient);
+        ::closesocket(m_nSocketClient);
         m_nSocketClient = INVALID_SOCKET;
     }
 
     if (m_nSocketLisent > 0)
     {
-        closesocket(m_nSocketLisent);
+        ::closesocket(m_nSocketLisent);
         m_nSocketLisent = INVALID_SOCKET;
 		//终止 DLL 的使用  
-		WSACleanup();
+		::WSACleanup();
+    }
+
+    if (m_Thread.joinable())
+    {   
+        m_Thread.join();
     }
 }
 
@@ -78,7 +84,14 @@ int DebugServer::StartServer(short port)
     if (port > 1024 && port < 65534)
     {
         m_nPort = port;
-        nRet = 1;
+
+        if (m_nSocketClient < 0)
+        {
+            InitServer();
+            nRet = 1;
+        }
+        else
+            printf("debug> connect already existed.\n");
     }
     return nRet;
 }
@@ -108,25 +121,24 @@ int DebugServer::Recv(std::string& msg)
 int DebugServer::InitServer()
 {
     int nRet = 0;
-
-    // 先清理，保证资源不泄露
-    UnInit();
     
+    if (!CheckRunState(DBG_RUN_STATE::DBG_NONE))
+        return nRet;
     //初始化 DLL  
 	WSADATA wsaData;
-	WSAStartup(MAKEWORD(2, 2), &wsaData);
+	::WSAStartup(MAKEWORD(2, 2), &wsaData);
 
     m_nSocketLisent = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (m_nSocketClient >= 0)
+    if (m_nSocketLisent >= 0)
     {   
         sockaddr_in addrServer;
         memset(&addrServer, 0, sizeof(addrServer));
         addrServer.sin_family = AF_INET;
         addrServer.sin_addr.s_addr = htonl(INADDR_ANY);
         addrServer.sin_port = htons(m_nPort);
-        if (bind(m_nSocketLisent, (sockaddr *)&addrServer, sizeof(addrServer)) >= 0)
+        if (::bind(m_nSocketLisent, (sockaddr *)&addrServer, sizeof(addrServer)) >= 0)
         {
-            if (listen(m_nSocketLisent, _TCP_MAX_CONN_WAIT) >= 0)
+            if (::listen(m_nSocketLisent, _TCP_MAX_CONN_WAIT) >= 0)
             {
                 AcceptThread();
                 nRet = 1;
@@ -136,11 +148,48 @@ int DebugServer::InitServer()
     return nRet;
 }
 
-int DebugServer::DisConnect()
+int DebugServer::Dettach()
 {
     int nRet = 0;
+    if (CheckRunState(DBG_RUN_STATE::DGB_ATTACH) && m_nSocketClient >= 0)
+    {
+        ::closesocket(m_nSocketClient);
+        m_nSocketClient = INVALID_SOCKET;
+        SetRunState(DBG_RUN_STATE::DBG_DETACH);
+        AcceptThread();
+        nRet = 1;
+    }
 
     return nRet;
+}
+
+void DebugServer::SetRunState(DBG_RUN_STATE st)
+{
+    try
+    {
+        // using a local lock_guard to lock mtx guarantees unlocking on destruction / exception:
+        std::lock_guard<std::mutex> lck(this->m_mtx);
+        m_dbgstate = st;
+    }
+    catch (std::logic_error &)
+    {
+        printf("[exception caught]\n");
+    }
+}
+
+bool DebugServer::CheckRunState(DBG_RUN_STATE st)
+{
+    try
+    {
+        // using a local lock_guard to lock mtx guarantees unlocking on destruction / exception:
+        std::lock_guard<std::mutex> lck(this->m_mtx);
+        return m_dbgstate == st;
+    }
+    catch (std::logic_error &)
+    {
+        printf("[exception caught]\n");
+    }
+    return false;
 }
 
 // lua interface
