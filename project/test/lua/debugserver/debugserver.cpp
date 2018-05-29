@@ -18,10 +18,7 @@ void DebugServer::AcceptThread()
         m_nSocketClient = INVALID_SOCKET;
     }
 
-    if (m_Thread.joinable())
-    {   
-        m_Thread.join();
-    }
+    StopThread();
 
     auto fThread = [this]() -> void {
         while (this->m_nSocketClient < 0 && this->m_nSocketLisent >= 0)
@@ -34,19 +31,21 @@ void DebugServer::AcceptThread()
             if (this->m_nSocketClient >= 0)
             {
                 this->SetRunState(DBG_RUN_STATE::DGB_ATTACH);
+                unsigned long ul = 1;
+                ::ioctlsocket(this->m_nSocketClient, FIONBIO, &ul);
                 printf("debug> attach success.\n");
             }
 
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         }
     };
-    m_Thread = std::thread(fThread);
+    m_pThread = new std::thread(fThread);
 }
 
 // debugserver
 DebugServer::DebugServer()
 :m_dbgstate(DBG_RUN_STATE::DBG_NONE),
-m_Thread(std::thread())
+m_pThread(new std::thread())
 {
 
 }
@@ -72,10 +71,8 @@ int DebugServer::UnInit()
 		::WSACleanup();
     }
 
-    if (m_Thread.joinable())
-    {   
-        m_Thread.join();
-    }
+    StopThread();
+	return 1;
 }
 
 int DebugServer::StartServer(short port)
@@ -84,14 +81,14 @@ int DebugServer::StartServer(short port)
     if (port > 1024 && port < 65534)
     {
         m_nPort = port;
-
+		printf("connectting to port =  %d\n", port);
         if (m_nSocketClient < 0)
         {
             InitServer();
             nRet = 1;
         }
         else
-            printf("debug> connect already existed.\n");
+            printf("debug> connect already existed: %d\n", m_nSocketClient);
     }
     return nRet;
 }
@@ -103,10 +100,29 @@ int DebugServer::StoprServer()
     return nRet;
 }
 
+void DebugServer::StopThread()
+{
+    if (m_pThread && m_pThread->joinable())
+    {   
+        m_pThread->join();
+        delete m_pThread;
+        m_pThread = nullptr;
+    }
+}
+
 int DebugServer::Send(std::string msg)
 {
     int nRet = 0;
 
+    if (m_nSocketClient > 0 && !CheckRunState(DBG_RUN_STATE::DGB_ATTACH))
+    {
+        return 0;
+    }
+
+    if(::send(m_nSocketClient, msg.c_str(), msg.length(), 0) > 0)
+    {
+        nRet = 1;
+    }
     return nRet;
 }
 
@@ -114,7 +130,16 @@ int DebugServer::Send(std::string msg)
 int DebugServer::Recv(std::string& msg)
 {
     int nRet = 0;
-
+    if (m_nSocketClient > 0 && !CheckRunState(DBG_RUN_STATE::DGB_ATTACH))
+    {
+        return 0;
+    }
+    char chbuffer[2048] = {0};
+    if (::recv(m_nSocketClient, chbuffer, 2047, 0) > 0)
+    {
+        msg.append(chbuffer);
+        nRet = 1;
+    }
     return nRet;
 }
 
@@ -207,7 +232,7 @@ DebugServerWrapper::~DebugServerWrapper()
 int DebugServerWrapper::StartServer(lua_State* L)
 {
     int nRet = 0;
-    int port = luaL_checkinteger(L, 1);
+    int port = luaL_checkinteger(L, 2);
     if (port > 1024 && port < 65534)
     {
         nRet = m_DbgSever.StartServer(port);
@@ -227,7 +252,7 @@ int DebugServerWrapper::StoprServer(lua_State* L)
 int DebugServerWrapper::Send(lua_State* L)
 {
     int nRet = 0;
-    const char* msg = luaL_checkstring(L, 1);
+    const char* msg = luaL_checkstring(L, 2);
     if (msg)
     {
         nRet = m_DbgSever.Send(std::string(msg));
@@ -246,8 +271,7 @@ int DebugServerWrapper::Recv(lua_State* L)
         lua_pushstring(L, msg.c_str());
         nRet++;
     }
-    lua_pushinteger(L, nRet);
-    return 1;
+    return nRet;
 }
 
 RegType DebugServerWrapper::Functions[] = 

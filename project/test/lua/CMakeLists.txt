@@ -27,5 +27,6 @@ link_libraries(
 
 set(
     SRC_LIST luamain.cpp
+    ./debugserver/debugserver.cpp
 )
 add_executable(main ${SRC_LIST})

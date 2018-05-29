@@ -1,9 +1,9 @@
 
+#include "./debugserver/debugserver.h"
 #include "luluadef.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <direct.h>  
-
 int g_Add(lua_State *L)
 {
     lua_Number a = luaL_checknumber(L, 1);
@@ -31,6 +31,7 @@ int main(int argc, char *argv[])
     };
 
     luaL_register(luaEnv, "glib", lib);
+    LuaPort::Register(luaEnv);
 
 	char *buffer;
 	char paht[256] = { 0 };
@@ -41,7 +42,8 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		sprintf(paht, "%s\\test.lua", buffer);
+		//sprintf(paht, "%s\\test.lua", buffer);
+		sprintf(paht, "%s\\test.lua", "e:\\github\\Lengineset\\project\\test\\lua\\cmake_build\\Debug");
 		printf("%s\n", buffer);
 		free(buffer);
 	}
@@ -65,6 +67,15 @@ int main(int argc, char *argv[])
     {
         nRetCall = lua_tonumber(luaEnv, -1);
         printf("pcall: 8 - 5 = %d\n", nRetCall);
+    }
+    lua_pop(luaEnv, -1);
+    while (true)
+    {
+        lua_getglobal(luaEnv, "on_tick");
+        lua_pcall(luaEnv, 0, 0, 0);
+        lua_pop(luaEnv, -1);
+        // printf("waitting for message...\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 
     lua_close(luaEnv);

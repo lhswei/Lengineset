@@ -3,16 +3,19 @@
 
 #include <stdio.h>
 #include <stdlib.h>  
-#include <stddef.h> 
-#include <synchapi.h >
-#include <winsock2.h>  
+#include <stddef.h>  
 #include <errno.h>
 #include <thread>         // std::thread
 #include <mutex>          // std::mutex, std::lock_guard, std::adopt_lock
 #include <chrono>
 #include <functional>
 #include <atomic>
+#include <winsock2.h> 
+#include <windows.h>
+#include <synchapi.h>
 #include <string>
+
+#pragma comment(lib, "WS2_32")
 
 #if defined(LDEBUG_BUILD_AS_DLL)	/* { */
 
@@ -61,12 +64,13 @@ private:
     int InitServer();
     void AcceptThread();
     int UnInit();
+    void StopThread();
 private:
-    SOCKET m_nSocketLisent = INVALID_SOCKET;
-    SOCKET m_nSocketClient = INVALID_SOCKET;
+    int m_nSocketLisent = INVALID_SOCKET;
+    int m_nSocketClient = INVALID_SOCKET;
     short m_nPort = -1;
     std::mutex m_mtx;
-    std::thread& m_Thread;
+    std::thread* m_pThread;
     DBG_RUN_STATE m_dbgstate;
 };
 
