@@ -14,6 +14,8 @@
 #include <windows.h>
 #include <synchapi.h>
 #include <string>
+#include "luawrapper.h"
+
 
 #pragma comment(lib, "WS2_32")
 
@@ -101,6 +103,38 @@ public:
     static int Constructor(lua_State *L);
     static int Porxy(lua_State *L);
     static int GCObj(lua_State *L);
+};
+
+class MyTest
+{
+public:
+	MyTest() {}
+	~MyTest() {}
+
+public:
+	int Foo(int a)
+	{
+		printf("_Foo_(%d)\n", a);
+		return 1;
+	}
+private:
+	int id = 0;
+};
+
+class MyTestWrapper : luacpp::LunaBase<MyTest>
+{
+public:
+	MyTestWrapper(lua_State* L):luacpp::LunaBase<MyTest>(L)
+	{
+		
+	}
+	~MyTestWrapper() {}
+
+public:
+	int LuaFoo(lua_State* L);
+
+public:
+	static luacpp::_RegType<MyTestWrapper> Functions[];
 };
 
 #endif //__DEBUG_SERVER_H__

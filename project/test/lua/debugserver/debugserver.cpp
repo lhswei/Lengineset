@@ -81,14 +81,14 @@ int DebugServer::StartServer(short port)
     if (port > 1024 && port < 65534)
     {
         m_nPort = port;
-		printf("connectting to port =  %d\n", port);
+		printf("listening port =  %d\n", port);
         if (m_nSocketClient < 0)
         {
             InitServer();
             nRet = 1;
         }
         else
-            printf("debug> connect already existed: %d\n", m_nSocketClient);
+            printf("debug> listening socket already existed: %d\n", m_nSocketClient);
     }
     return nRet;
 }
@@ -232,7 +232,7 @@ DebugServerWrapper::~DebugServerWrapper()
 int DebugServerWrapper::StartServer(lua_State* L)
 {
     int nRet = 0;
-    int port = luaL_checkinteger(L, 2);
+    int port = luaL_checkinteger(L, 1);
     if (port > 1024 && port < 65534)
     {
         nRet = m_DbgSever.StartServer(port);
@@ -252,7 +252,7 @@ int DebugServerWrapper::StoprServer(lua_State* L)
 int DebugServerWrapper::Send(lua_State* L)
 {
     int nRet = 0;
-    const char* msg = luaL_checkstring(L, 2);
+    const char* msg = luaL_checkstring(L, 1);
     if (msg)
     {
         nRet = m_DbgSever.Send(std::string(msg));
@@ -320,6 +320,7 @@ int LuaPort::Porxy(lua_State *L)
 {
     int i = (int)lua_tonumber(L, lua_upvalueindex(1));
     DebugServerWrapper **obj = static_cast<DebugServerWrapper **>(luaL_checkudata(L, 1, "DebugServer"));
+	lua_remove(L, 1);
     return ((*obj)->*(DebugServerWrapper::Functions[i].mfunc))(L);
 }
 
@@ -330,6 +331,16 @@ int LuaPort::GCObj(lua_State *L)
     return 0;
 }
 
+int MyTestWrapper::LuaFoo(lua_State* L)
+{
+	int port = luaL_checkinteger(L, 1);
+	Foo(port);
+	return 1;
+}
 
-
+luacpp::_RegType<MyTestWrapper> MyTestWrapper::Functions[] =
+{
+	{ "Foo", &MyTestWrapper::LuaFoo },
+	{NULL, NULL}
+};
 

@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <direct.h>  
+#include "./debugserver/luawrapper.h"
 int g_Add(lua_State *L)
 {
     lua_Number a = luaL_checknumber(L, 1);
@@ -32,7 +33,7 @@ int main(int argc, char *argv[])
 
     luaL_register(luaEnv, "glib", lib);
     LuaPort::Register(luaEnv);
-
+	luacpp::Luna<MyTestWrapper, MyTest>::Register(luaEnv);
 	char *buffer;
 	char paht[256] = { 0 };
 	//也可以将buffer作为输出参数  
