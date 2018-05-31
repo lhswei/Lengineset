@@ -8,6 +8,7 @@ extern "C" {
 }
 
 #ifndef __stringify_1
+// 将token转化成字符串
 #define  __stringify_1(x)   #x
 #endif
 
@@ -34,6 +35,9 @@ private: \
 #define L_DEFINE_LUA_CLASS(T, N) \
 const char* T::className = __stringify_1(N)
 
+
+// 注册
+#define L_LUA_WRAPPER_REGISTER(T, L) luacpp::Luna<T>::Register(L) 
 
 namespace luacpp
 {

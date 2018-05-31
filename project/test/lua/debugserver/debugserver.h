@@ -77,9 +77,10 @@ private:
 };
 
 
-class DebugServerWrapper
+class DebugServerWrapper: L_INHERIT_CALSS(DebugServer)
 {
 public:
+	typedef DebugServer superclass;
     DebugServerWrapper(lua_State* L);
     ~DebugServerWrapper();
 
@@ -89,20 +90,8 @@ public:
     int Send(lua_State* L);
     int Recv(lua_State* L);
 
-public:
-    static RegType Functions[];
-private:
-    DebugServer m_DbgSever;
-    lua_State* m_Lua = nullptr;
-};
-
-class LuaPort
-{
-public:
-    static void Register(lua_State* L);
-    static int Constructor(lua_State *L);
-    static int Porxy(lua_State *L);
-    static int GCObj(lua_State *L);
+	// 需要放最后，这个宏定义public成员，若放中间会改变其他成员的访问权限
+	L_DECLARE_LUA_CLASS(DebugServerWrapper);
 };
 
 class MyTest

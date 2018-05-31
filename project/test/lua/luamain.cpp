@@ -32,8 +32,8 @@ int main(int argc, char *argv[])
     };
 
     luaL_register(luaEnv, "glib", lib);
-    LuaPort::Register(luaEnv);
-	luacpp::Luna<MyTestWrapper>::Register(luaEnv);
+	L_LUA_WRAPPER_REGISTER(DebugServerWrapper, luaEnv);
+	L_LUA_WRAPPER_REGISTER(MyTestWrapper, luaEnv);
 	char *buffer;
 	char paht[256] = { 0 };
 	//也可以将buffer作为输出参数  
