@@ -1,3 +1,103 @@
+// 
+// @filename:    luawrpper.h
+// @Author:      luhengsi
+// @DateTime:    2018-05-31 11:50:23
+// @Description: define lua wrapper
+// @Description: 
+
+/*
+一个 c++ 类导出到 lua 的简单的基本模型
+使用方法：
+	1. 声明和定义被导出了c++类: MyTest，这个类可以是不含lua操作的类。
+	   也可以有lua操作，看需求定。
+	2. 声明和定义保包装类: MyTestWarpper。声明和定义需要用到下面一系列的宏定义，
+	   用来绑定 MyTestWarpper 和 MyTest的关系。
+	3. 使用 L_LUA_WRAPPER_REGISTER(MyTestWarpper, luaEvn);来调用注册要导出的类，
+	   以及类的方法。
+
+文件结构：
+--=========================================================================
+-----------test.h------------
+class MyTest
+{
+public:
+	MyTest() {}
+	~MyTest() {}
+
+public:
+	int Foo(int a)
+	{
+		printf("_Foo_(%d)\n", a);
+		id = a;
+		return 1;
+	}
+private:
+	
+};
+
+class MyTestWrapper : L_INHERIT_CALSS(MyTest)
+{
+public:
+	MyTestWrapper(lua_State* L):L_INHERIT_TYPE(MyTest)(L)
+	{
+
+	}
+	~MyTestWrapper() {}
+
+public:
+	int LuaFoo(lua_State* L);
+
+	// 需要放最后，这个宏定义public成员，若放中间会改变其他成员的访问权限
+	L_DECLARE_LUA_CLASS(MyTestWrapper);
+};
+
+--=========================================================================
+-------------test.cpp--------------
+
+L_DEFINE_LUA_CLASS(MyTestWrapper, MyTest);
+
+int MyTestWrapper::LuaFoo(lua_State* L)
+{
+	int port = luaL_checkinteger(L, 1);
+	Foo(port);
+	return 1;
+}
+
+L_REG_TYPE(MyTestWrapper) MyTestWrapper::Functions[] =
+{
+	{ "Foo", &MyTestWrapper::LuaFoo },
+	{NULL, NULL}
+};
+--========================================================================
+-------------main.cpp----------------
+int main(int argc, char *argv[])
+{
+	lua_State* luaEnv = luaL_newstate();
+	if (!luaEnv)
+	{
+		printf("lua_open fail!\n");
+		return 0;
+	}
+
+	luaL_openlibs(luaEnv);
+	L_LUA_WRAPPER_REGISTER(MyTestWrapper, luaEnv);
+	int nRetCode = luaL_dofile(luaEnv, "test.lua");
+	if(nRetCode)
+	{
+		printf("error pcall:\n %s\n", luaL_tolstring(luaEnv, -1, NULL));
+	}
+	lua_close(luaEnv);
+	getchar();
+	return 0;
+}
+--========================================================================
+---------------test.lua--------------------------------
+local mytest = MyTest()
+mytest:Foo(99);
+--========================================================================
+
+*/
+
 #ifndef __LUA_WRAPPER_H__
 #define __LUA_WRAPPER_H__
 
@@ -27,7 +127,7 @@ public: \
 	static const char* className; \
 	static L_REG_TYPE(T) Functions[]; \
 private: \
-	const char* _Version() {return #T" lua wrapper 0.1"; }
+	const char* _Version() { return #T" lua wrapper 0.1"; }
 
 
 // lua包装类定义导出的类名
@@ -100,7 +200,7 @@ public:
 		{
 			lua_pushstring(L, T::Functions[i].name);
 			lua_pushnumber(L, i);
-			lua_pushcclosure(L, &Luna::Porxy, 1);
+			lua_pushcclosure(L, &Luna::Proxy, 1);
 			lua_settable(L, -3);
 		}
 
@@ -130,7 +230,7 @@ public:
 
 		return 1;
 	}
-    static int Porxy(lua_State *L)
+    static int Proxy(lua_State *L)
 	{
 		int i = (int)lua_tonumber(L, lua_upvalueindex(1));
 		T **obj = static_cast<T **>(luaL_checkudata(L, 1, T::className));

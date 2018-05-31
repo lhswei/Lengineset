@@ -307,7 +307,7 @@ end
 
 -- l_debug:get_break_info("E:\\github\\Lengineset\\project\\test\\lua\\script\\test.lua : 17     ")
 function l_debug:get_break_info(sbreak)
-    local _, _, file, l = sfind(sbreak, "(.*%.%w+)%s*:%s*(%w+)%s*");
+    local _, _, file, l = sfind(sbreak, "(%w+.*%.%w+)%s*:%s*(%d+)%s*");
     if not file then
         return nil, "invalid in put.";
     end

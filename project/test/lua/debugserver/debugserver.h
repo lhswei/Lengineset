@@ -14,8 +14,8 @@
 #include <windows.h>
 #include <synchapi.h>
 #include <string>
+#include <queue>
 #include "luawrapper.h"
-
 
 #pragma comment(lib, "WS2_32")
 
@@ -40,7 +40,7 @@
 struct lua_State;
 class DebugServerWrapper;
 
-enum class DBG_RUN_STATE {DBG_NONE, DBG_DETACH, DGB_ATTACH};
+enum class DBG_RUN_STATE {DBG_NONE, DBG_DETACH, DBG_ATTACH};
 
 struct RegType
 {
@@ -62,18 +62,25 @@ public:
     int Dettach();
     void SetRunState(DBG_RUN_STATE st);
     bool CheckRunState(DBG_RUN_STATE st);
+	int ReadCmd(std::string& cmd);
 private:
     int InitServer();
     void AcceptThread();
     int UnInit();
-    void StopThread();
+	void StopThread();
+	void StartConsole();
+	void StopConsole();
 private:
+    DBG_RUN_STATE m_dbgstate;
     int m_nSocketLisent = INVALID_SOCKET;
     int m_nSocketClient = INVALID_SOCKET;
     short m_nPort = -1;
     std::mutex m_mtx;
     std::thread* m_pThread;
-    DBG_RUN_STATE m_dbgstate;
+
+	std::mutex m_mtxconsole;
+	std::thread* m_pThreadConsole;
+	std::queue<std::string> m_qConsole;
 };
 
 
@@ -89,6 +96,8 @@ public:
     int StoprServer(lua_State* L);
     int Send(lua_State* L);
     int Recv(lua_State* L);
+	int Dettach(lua_State* L);
+	int ReadCmd(lua_State* L);
 
 	// 需要放最后，这个宏定义public成员，若放中间会改变其他成员的访问权限
 	L_DECLARE_LUA_CLASS(DebugServerWrapper);

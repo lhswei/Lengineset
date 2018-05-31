@@ -11,7 +11,7 @@ L_DEFINE_LUA_CLASS(DebugServerWrapper, DebugServer);
 
 void DebugServer::AcceptThread()
 {
-    if (CheckRunState(DBG_RUN_STATE::DGB_ATTACH))
+    if (!CheckRunState(DBG_RUN_STATE::DBG_NONE))
         return;
 
     if (m_nSocketClient > 0)
@@ -23,31 +23,46 @@ void DebugServer::AcceptThread()
     StopThread();
 
     auto fThread = [this]() -> void {
-        while (this->m_nSocketClient < 0 && this->m_nSocketLisent >= 0)
+		this->SetRunState(DBG_RUN_STATE::DBG_DETACH);
+        while (this->m_nSocketLisent >= 0)
         {
             sockaddr_in sockaddrClient;
             int nRetCode = 0;
             int nsin_size = sizeof(struct sockaddr_in);
-            this->SetRunState(DBG_RUN_STATE::DBG_DETACH);
-            this->m_nSocketClient = ::accept(this->m_nSocketLisent, (struct sockaddr *)&sockaddrClient, &nsin_size);
-            if (this->m_nSocketClient >= 0)
+            int conn = ::accept(this->m_nSocketLisent, (struct sockaddr *)&sockaddrClient, &nsin_size);
+            if (conn >= 0)
             {
-                this->SetRunState(DBG_RUN_STATE::DGB_ATTACH);
-                unsigned long ul = 1;
-                ::ioctlsocket(this->m_nSocketClient, FIONBIO, &ul);
-                printf("debug> attach success.\n");
+				if (this->m_nSocketClient < 0)
+				{
+					this->m_nSocketClient = conn;
+					this->SetRunState(DBG_RUN_STATE::DBG_ATTACH);
+					unsigned long ul = 1;
+					::ioctlsocket(this->m_nSocketClient, FIONBIO, &ul);
+					printf("debug> attach success.\n");
+				}
+				else
+				{
+					std::string msg("connection already exist.");
+					::send(conn, msg.c_str(), msg.length(), 0);
+					std::this_thread::sleep_for(std::chrono::milliseconds(100));
+					::closesocket(conn);
+					conn = INVALID_SOCKET;
+				}
             }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     };
     m_pThread = new std::thread(fThread);
 }
 
+
+
 // debugserver
 DebugServer::DebugServer()
 :m_dbgstate(DBG_RUN_STATE::DBG_NONE),
-m_pThread(new std::thread())
+m_pThread(nullptr),
+m_pThreadConsole(nullptr)
 {
 
 }
@@ -55,10 +70,13 @@ m_pThread(new std::thread())
 DebugServer::~DebugServer()
 {
     UnInit();
+	StopConsole();
 }
 
 int DebugServer::UnInit()
 {
+    StopThread();
+
     if (m_nSocketClient > 0)
     {
         ::closesocket(m_nSocketClient);
@@ -73,7 +91,8 @@ int DebugServer::UnInit()
 		::WSACleanup();
     }
 
-    StopThread();
+	SetRunState(DBG_RUN_STATE::DBG_NONE);
+
 	return 1;
 }
 
@@ -98,25 +117,55 @@ int DebugServer::StartServer(short port)
 int DebugServer::StoprServer()
 {
     int nRet = 0;
-
+	UnInit();
     return nRet;
 }
 
 void DebugServer::StopThread()
 {
-    if (m_pThread && m_pThread->joinable())
+    if (m_pThread)
     {   
-        m_pThread->join();
         delete m_pThread;
         m_pThread = nullptr;
     }
+}
+
+void DebugServer::StartConsole()
+{
+	if (m_pThreadConsole)
+		return;
+
+	auto fThread = [this]() -> void {
+		char szMessage[1024] = {0};
+		do
+		{
+			memset(szMessage, 0, 1024);
+			if (fgets(szMessage, 1024 - 1, stdin) && this->m_qConsole.size() < 10)
+			{
+				std::lock_guard<std::mutex> lck(this->m_mtxconsole);
+				this->m_qConsole.push(szMessage);
+			}
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		} while (true);
+	};
+
+	m_pThreadConsole = new std::thread(fThread);
+}
+
+void DebugServer::StopConsole()
+{
+	if (m_pThreadConsole)
+	{
+		delete m_pThreadConsole;
+		m_pThreadConsole = nullptr;
+	}
 }
 
 int DebugServer::Send(std::string msg)
 {
     int nRet = 0;
 
-    if (m_nSocketClient > 0 && !CheckRunState(DBG_RUN_STATE::DGB_ATTACH))
+    if (m_nSocketClient < 0)
     {
         return 0;
     }
@@ -132,23 +181,40 @@ int DebugServer::Send(std::string msg)
 int DebugServer::Recv(std::string& msg)
 {
     int nRet = 0;
-    if (m_nSocketClient > 0 && !CheckRunState(DBG_RUN_STATE::DGB_ATTACH))
+    if (m_nSocketClient < 0)
     {
         return 0;
     }
+
     char chbuffer[2048] = {0};
-    if (::recv(m_nSocketClient, chbuffer, 2047, 0) > 0)
-    {
-        msg.append(chbuffer);
-        nRet = 1;
-    }
+	int cnt = ::recv(m_nSocketClient, chbuffer, 2047, 0);
+	if (cnt > 0)
+	{
+		//正常处理数据
+		msg.append(chbuffer);
+		nRet = 1;
+	}
+	else
+	{
+		if ((cnt < 0) && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR))
+		{
+			//这几种错误码，认为连接是正常的，继续接收
+		}
+		else if (cnt == 0)
+		{
+			// 断开连接，接受线程继续等待连接
+			Dettach();
+		}
+	}
     return nRet;
 }
 
 int DebugServer::InitServer()
 {
     int nRet = 0;
-    
+
+	StartConsole();
+
     if (!CheckRunState(DBG_RUN_STATE::DBG_NONE))
         return nRet;
     //初始化 DLL  
@@ -178,12 +244,11 @@ int DebugServer::InitServer()
 int DebugServer::Dettach()
 {
     int nRet = 0;
-    if (CheckRunState(DBG_RUN_STATE::DGB_ATTACH) && m_nSocketClient >= 0)
+    if (m_nSocketClient >= 0)
     {
         ::closesocket(m_nSocketClient);
         m_nSocketClient = INVALID_SOCKET;
         SetRunState(DBG_RUN_STATE::DBG_DETACH);
-        AcceptThread();
         nRet = 1;
     }
 
@@ -209,7 +274,7 @@ bool DebugServer::CheckRunState(DBG_RUN_STATE st)
     try
     {
         // using a local lock_guard to lock mtx guarantees unlocking on destruction / exception:
-        std::lock_guard<std::mutex> lck(this->m_mtx);
+        std::lock_guard<std::mutex> lck(m_mtx);
         return m_dbgstate == st;
     }
     catch (std::logic_error &)
@@ -217,6 +282,19 @@ bool DebugServer::CheckRunState(DBG_RUN_STATE st)
         printf("[exception caught]\n");
     }
     return false;
+}
+
+int DebugServer::ReadCmd(std::string& cmd)
+{
+	int nRet = 0;
+	std::lock_guard<std::mutex> lck(m_mtxconsole);
+	if (m_qConsole.size() > 0)
+	{
+		cmd.swap(m_qConsole.front());
+		m_qConsole.pop();
+		nRet = cmd.length();
+	}
+	return nRet;
 }
 
 // lua interface
@@ -276,12 +354,32 @@ int DebugServerWrapper::Recv(lua_State* L)
     return nRet;
 }
 
+int DebugServerWrapper::Dettach(lua_State* L)
+{	
+	superclass::Dettach();
+	return 0;
+}
+
+int DebugServerWrapper::ReadCmd(lua_State* L)
+{
+	int nRet = 0;
+	std::string msg;
+	int len = superclass::ReadCmd(msg);
+	if (len > 0)
+	{
+		lua_pushstring(L, msg.c_str());
+		nRet++;
+	}
+	return nRet;
+}
 L_REG_TYPE(DebugServerWrapper) DebugServerWrapper::Functions[] =
 {
     {"StartServer", &DebugServerWrapper::StartServer},
     {"StoprServer", &DebugServerWrapper::StoprServer},
     {"Send", &DebugServerWrapper::Send},
-    {"Revc", &DebugServerWrapper::Recv},
+	{"Revc", &DebugServerWrapper::Recv},
+	{"Dettach", &DebugServerWrapper::Dettach},
+	{"ReadCmd", &DebugServerWrapper::ReadCmd},
     {NULL, NULL}
 };
 

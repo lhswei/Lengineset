@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
         lua_pcall(luaEnv, 0, 0, 0);
         lua_pop(luaEnv, -1);
         // printf("waitting for message...\n");
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     lua_close(luaEnv);
