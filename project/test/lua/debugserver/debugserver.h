@@ -115,16 +115,17 @@ public:
 	int Foo(int a)
 	{
 		printf("_Foo_(%d)\n", a);
+		id = a;
 		return 1;
 	}
 private:
 	int id = 0;
 };
 
-class MyTestWrapper : luacpp::LunaBase<MyTest>
+class MyTestWrapper : L_INHERIT_CALSS(MyTest)
 {
 public:
-	MyTestWrapper(lua_State* L):luacpp::LunaBase<MyTest>(L)
+	MyTestWrapper(lua_State* L):L_INHERIT_TYPE(MyTest)(L)
 	{
 		
 	}
@@ -133,8 +134,8 @@ public:
 public:
 	int LuaFoo(lua_State* L);
 
-public:
-	static luacpp::_RegType<MyTestWrapper> Functions[];
+	// 需要放最后，这个宏定义public成员，若放中间会改变其他成员的访问权限
+	L_DECLARE_LUA_CLASS(MyTestWrapper);
 };
 
 #endif //__DEBUG_SERVER_H__

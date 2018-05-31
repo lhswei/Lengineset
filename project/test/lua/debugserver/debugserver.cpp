@@ -331,6 +331,8 @@ int LuaPort::GCObj(lua_State *L)
     return 0;
 }
 
+L_DEFINE_LUA_CLASS(MyTestWrapper, MyTest);
+
 int MyTestWrapper::LuaFoo(lua_State* L)
 {
 	int port = luaL_checkinteger(L, 1);
@@ -338,7 +340,7 @@ int MyTestWrapper::LuaFoo(lua_State* L)
 	return 1;
 }
 
-luacpp::_RegType<MyTestWrapper> MyTestWrapper::Functions[] =
+L_REG_TYPE(MyTestWrapper) MyTestWrapper::Functions[] =
 {
 	{ "Foo", &MyTestWrapper::LuaFoo },
 	{NULL, NULL}
