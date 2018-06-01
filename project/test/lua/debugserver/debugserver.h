@@ -57,30 +57,38 @@ public:
 public:
     int StartServer(short port);
     int StoprServer();
-    int Send(std::string msg);
-    int Recv(std::string& msg);
+    int Send(std::string& msg);
+	int Recv(std::string& msg);
     int Dettach();
     void SetRunState(DBG_RUN_STATE st);
     bool CheckRunState(DBG_RUN_STATE st);
 	int ReadCmd(std::string& cmd);
+	void StartConsole();
+	void StopConsole();
 private:
+	int _Recv(std::string& msg);
     int InitServer();
     void AcceptThread();
     int UnInit();
 	void StopThread();
-	void StartConsole();
-	void StopConsole();
+	void StartRecv();
+	void StopRecv();
 private:
     DBG_RUN_STATE m_dbgstate;
     int m_nSocketLisent = INVALID_SOCKET;
     int m_nSocketClient = INVALID_SOCKET;
     short m_nPort = -1;
+	int m_nPing = 30;
     std::mutex m_mtx;
     std::thread* m_pThread;
 
 	std::mutex m_mtxconsole;
-	std::thread* m_pThreadConsole;
+	std::thread m_ThreadConsole;
 	std::queue<std::string> m_qConsole;
+
+	std::mutex m_mtxRecv;
+	std::thread* m_pThreadRecv;
+	std::queue<std::string> m_qRecv;
 };
 
 
@@ -98,6 +106,8 @@ public:
     int Recv(lua_State* L);
 	int Dettach(lua_State* L);
 	int ReadCmd(lua_State* L);
+	int StartConsole(lua_State* L);
+	int StopConsole(lua_State* L);
 
 	// 需要放最后，这个宏定义public成员，若放中间会改变其他成员的访问权限
 	L_DECLARE_LUA_CLASS(DebugServerWrapper);

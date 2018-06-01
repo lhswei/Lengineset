@@ -35,6 +35,7 @@ void DebugServer::AcceptThread()
 				if (this->m_nSocketClient < 0)
 				{
 					this->m_nSocketClient = conn;
+					this->m_nPing = 30;
 					this->SetRunState(DBG_RUN_STATE::DBG_ATTACH);
 					unsigned long ul = 1;
 					::ioctlsocket(this->m_nSocketClient, FIONBIO, &ul);
@@ -62,13 +63,15 @@ void DebugServer::AcceptThread()
 DebugServer::DebugServer()
 :m_dbgstate(DBG_RUN_STATE::DBG_NONE),
 m_pThread(nullptr),
-m_pThreadConsole(nullptr)
+m_ThreadConsole(),
+m_pThreadRecv(nullptr)
 {
 
 }
 
 DebugServer::~DebugServer()
 {
+	StopRecv();
     UnInit();
 	StopConsole();
 }
@@ -76,7 +79,6 @@ DebugServer::~DebugServer()
 int DebugServer::UnInit()
 {
     StopThread();
-
     if (m_nSocketClient > 0)
     {
         ::closesocket(m_nSocketClient);
@@ -132,16 +134,20 @@ void DebugServer::StopThread()
 
 void DebugServer::StartConsole()
 {
-	if (m_pThreadConsole)
+	if (m_ThreadConsole.joinable())
 		return;
 
 	auto fThread = [this]() -> void {
 		char szMessage[1024] = {0};
 		do
 		{
+			//select();
 			memset(szMessage, 0, 1024);
 			if (fgets(szMessage, 1024 - 1, stdin) && this->m_qConsole.size() < 10)
 			{
+				if (strcmp("stop\n", szMessage) == 0)
+					break;
+
 				std::lock_guard<std::mutex> lck(this->m_mtxconsole);
 				this->m_qConsole.push(szMessage);
 			}
@@ -149,19 +155,84 @@ void DebugServer::StartConsole()
 		} while (true);
 	};
 
-	m_pThreadConsole = new std::thread(fThread);
+	m_ThreadConsole = std::move(std::thread(fThread));
 }
 
 void DebugServer::StopConsole()
 {
-	if (m_pThreadConsole)
+	if (m_ThreadConsole.joinable())
 	{
-		delete m_pThreadConsole;
-		m_pThreadConsole = nullptr;
+		m_ThreadConsole.join();
+	}
+
+}
+
+void DebugServer::StartRecv()
+{
+	if (m_pThreadRecv)
+		return;
+
+	auto fThread = [this]() -> void {
+		std::string sping("ping");
+		std::string spong("pong");
+		int len = spong.length();
+		int nstep = 0;
+		do
+		{
+			if (!(this->CheckRunState(DBG_RUN_STATE::DBG_ATTACH)))
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+				continue;
+			}
+
+			std::string msg;
+			do
+			{
+				msg.clear();
+				this->_Recv(msg);
+				if (msg.length() == len && msg == spong)
+				{
+					// 收到ping
+					this->m_nPing = 10;
+				}
+				else if (msg.length() > 0)
+				{
+					std::lock_guard<std::mutex> lck(this->m_mtxRecv);
+					if (this->m_qRecv.size() < 100)
+					{
+						this->m_qRecv.push(msg);
+					}
+				}
+			} while (msg.length() > 0);
+
+			if ( (nstep++ % 10) == 0 )
+			{
+				
+				if (this->m_nPing-- < 0)
+					this->Dettach();	// 失去链接
+				else
+					this->Send(sping);  // ping
+			}
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			
+
+		} while (true);
+	};
+
+	m_pThreadRecv = new std::thread(fThread);
+}
+
+void DebugServer::StopRecv()
+{
+	if (m_pThreadRecv)
+	{
+		delete m_pThreadRecv;
+		m_pThreadRecv = nullptr;
 	}
 }
 
-int DebugServer::Send(std::string msg)
+int DebugServer::Send(std::string& msg)
 {
     int nRet = 0;
 
@@ -177,8 +248,23 @@ int DebugServer::Send(std::string msg)
     return nRet;
 }
 
-
 int DebugServer::Recv(std::string& msg)
+{
+	int nRet = 0;
+	do
+	{
+		std::lock_guard<std::mutex> lck(m_mtxRecv);
+		if (m_qRecv.size() > 0)
+		{
+			msg.swap(m_qRecv.front());
+			m_qRecv.pop();
+			nRet = msg.length();
+		}
+	} while (false);
+	return nRet;
+}
+
+int DebugServer::_Recv(std::string& msg)
 {
     int nRet = 0;
     if (m_nSocketClient < 0)
@@ -213,7 +299,7 @@ int DebugServer::InitServer()
 {
     int nRet = 0;
 
-	StartConsole();
+	StartRecv();
 
     if (!CheckRunState(DBG_RUN_STATE::DBG_NONE))
         return nRet;
@@ -249,6 +335,7 @@ int DebugServer::Dettach()
         ::closesocket(m_nSocketClient);
         m_nSocketClient = INVALID_SOCKET;
         SetRunState(DBG_RUN_STATE::DBG_DETACH);
+		printf("debug> connection is broken.");
         nRet = 1;
     }
 
@@ -271,17 +358,7 @@ void DebugServer::SetRunState(DBG_RUN_STATE st)
 
 bool DebugServer::CheckRunState(DBG_RUN_STATE st)
 {
-    try
-    {
-        // using a local lock_guard to lock mtx guarantees unlocking on destruction / exception:
-        std::lock_guard<std::mutex> lck(m_mtx);
-        return m_dbgstate == st;
-    }
-    catch (std::logic_error &)
-    {
-        printf("[exception caught]\n");
-    }
-    return false;
+	return m_dbgstate == st;
 }
 
 int DebugServer::ReadCmd(std::string& cmd)
@@ -335,7 +412,8 @@ int DebugServerWrapper::Send(lua_State* L)
     const char* msg = luaL_checkstring(L, 1);
     if (msg)
     {
-        nRet = superclass::Send(std::string(msg));
+		std::string strmsg(msg);
+        nRet = superclass::Send(strmsg);
     }
     lua_pushinteger(L, nRet);
     return 1;
@@ -372,6 +450,19 @@ int DebugServerWrapper::ReadCmd(lua_State* L)
 	}
 	return nRet;
 }
+
+int DebugServerWrapper::StartConsole(lua_State* L)
+{
+	superclass::StartConsole();
+	return 0;
+}
+
+int DebugServerWrapper::StopConsole(lua_State* L)
+{
+	superclass::StopConsole();
+	return 0;
+}
+
 L_REG_TYPE(DebugServerWrapper) DebugServerWrapper::Functions[] =
 {
     {"StartServer", &DebugServerWrapper::StartServer},
@@ -379,7 +470,9 @@ L_REG_TYPE(DebugServerWrapper) DebugServerWrapper::Functions[] =
     {"Send", &DebugServerWrapper::Send},
 	{"Revc", &DebugServerWrapper::Recv},
 	{"Dettach", &DebugServerWrapper::Dettach},
-	{"ReadCmd", &DebugServerWrapper::ReadCmd},
+	{"ReadCmd", &DebugServerWrapper::ReadCmd },
+	{"StartConsole", &DebugServerWrapper::StartConsole },
+	{"StopConsole", &DebugServerWrapper::StopConsole },
     {NULL, NULL}
 };
 
