@@ -17,6 +17,10 @@
 #include <queue>
 #include "luawrapper.h"
 
+#include <iostream>
+#include <fstream>  
+#include <stdexcept>      // std::logic_error
+
 #pragma comment(lib, "WS2_32")
 
 #if defined(LDEBUG_BUILD_AS_DLL)	/* { */
@@ -29,7 +33,7 @@
 
 #else				/* }{ */
 
-#define LDEBUG_API 	extern "C"
+#define LDEBUG_API 	__declspec(dllimport)
 
 #endif				/* } */
 

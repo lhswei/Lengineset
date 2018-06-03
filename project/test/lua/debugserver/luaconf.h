@@ -49,7 +49,7 @@
 */
 #define LUA_USE_WINDOWS
 
-/* #undef LUA_DL_DLL */
+#define LUA_DL_DLL 
 /* #undef LUA_USE_POSIX */
 /* #undef LUA_USE_DLOPEN */
 /* #undef LUA_USE_READLINE */

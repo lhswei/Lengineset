@@ -4,10 +4,7 @@ extern "C" {
     #include "lauxlib.h"
 }
 
-#include <iostream>
-#include <fstream>  
 #include "debugserver.h"
-#include <stdexcept>      // std::logic_error
 
 L_DEFINE_LUA_CLASS(DebugServerWrapper, DebugServer);
 
