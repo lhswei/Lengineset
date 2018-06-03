@@ -30,3 +30,16 @@ set(
     ./debugserver/debugserver.cpp
 )
 add_executable(main ${SRC_LIST})
+
+## BUILD
+# Create lua library
+set( 
+    LIBLDB_SRC ./debugserver/debugserver.cpp
+    ./debugserver/debug_dll.cpp
+    ) 
+add_library ( ldebugserver SHARED  ${LIBLDB_SRC})
+target_link_libraries ( ldebugserver ${lua_lib} )
+set_target_properties ( ldebugserver PROPERTIES COMPILE_DEFINITIONS LDEBUG_BUILD_AS_DLL )
+set_target_properties ( ldebugserver PROPERTIES COMPILE_DEFINITIONS LDEUBG_LIB )
+set_target_properties ( ldebugserver PROPERTIES COMPILE_DEFINITIONS LUA_USE_WIN )
+

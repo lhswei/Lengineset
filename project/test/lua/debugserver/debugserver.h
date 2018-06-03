@@ -29,7 +29,7 @@
 
 #else				/* }{ */
 
-#define LDEBUG_API		extern
+#define LDEBUG_API 	extern "C"
 
 #endif				/* } */
 
