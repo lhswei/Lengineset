@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 	else
 	{
 		//sprintf(paht, "%s\\test.lua", buffer);
-		sprintf(paht, "%s\\test.lua", "e:\\github\\Lengineset\\project\\test\\lua\\cmake_build\\Debug");
+		sprintf(paht, "%s\\test.lua", "e:\\github\\Lengineset\\project\\test\\lua\\build\\Debug");
 		printf("%s\n", buffer);
 		free(buffer);
 	}

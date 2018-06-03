@@ -80,14 +80,14 @@ private:
     short m_nPort = -1;
 	int m_nPing = 30;
     std::mutex m_mtx;
-    std::thread* m_pThread;
+    std::thread m_Thread;
 
 	std::mutex m_mtxconsole;
 	std::thread m_ThreadConsole;
 	std::queue<std::string> m_qConsole;
 
 	std::mutex m_mtxRecv;
-	std::thread* m_pThreadRecv;
+	std::thread m_ThreadRecv;
 	std::queue<std::string> m_qRecv;
 };
 

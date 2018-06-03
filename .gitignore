@@ -18,3 +18,4 @@ cmake_build/
 .vs_lua/
 luacmake_build.*
 *.lib
+build/

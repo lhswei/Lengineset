@@ -4,6 +4,8 @@ extern "C" {
     #include "lauxlib.h"
 }
 
+#include <iostream>
+#include <fstream>  
 #include "debugserver.h"
 #include <stdexcept>      // std::logic_error
 
@@ -14,13 +16,15 @@ void DebugServer::AcceptThread()
     if (!CheckRunState(DBG_RUN_STATE::DBG_NONE))
         return;
 
+	if (m_Thread.joinable())
+		return;
+
     if (m_nSocketClient > 0)
     {
         ::closesocket(m_nSocketClient);
         m_nSocketClient = INVALID_SOCKET;
     }
 
-    StopThread();
 
     auto fThread = [this]() -> void {
 		this->SetRunState(DBG_RUN_STATE::DBG_DETACH);
@@ -54,7 +58,7 @@ void DebugServer::AcceptThread()
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     };
-    m_pThread = new std::thread(fThread);
+	m_Thread = std::move(std::thread(fThread));
 }
 
 
@@ -62,17 +66,17 @@ void DebugServer::AcceptThread()
 // debugserver
 DebugServer::DebugServer()
 :m_dbgstate(DBG_RUN_STATE::DBG_NONE),
-m_pThread(nullptr),
+m_Thread(),
 m_ThreadConsole(),
-m_pThreadRecv(nullptr)
+m_ThreadRecv()
 {
 
 }
 
 DebugServer::~DebugServer()
 {
-	StopRecv();
     UnInit();
+	StopRecv();
 	StopConsole();
 }
 
@@ -125,10 +129,9 @@ int DebugServer::StoprServer()
 
 void DebugServer::StopThread()
 {
-    if (m_pThread)
+    if (m_Thread.joinable())
     {   
-        delete m_pThread;
-        m_pThread = nullptr;
+		m_Thread.join();
     }
 }
 
@@ -141,18 +144,27 @@ void DebugServer::StartConsole()
 		char szMessage[1024] = {0};
 		do
 		{
-			//select();
 			memset(szMessage, 0, 1024);
-			if (fgets(szMessage, 1024 - 1, stdin) && this->m_qConsole.size() < 10)
+			std::cin.getline(szMessage, 1024 - 1);
+			if (szMessage[0])
 			{
-				if (strcmp("stop\n", szMessage) == 0)
+				if (strcmp("q", szMessage) == 0)
 					break;
 
 				std::lock_guard<std::mutex> lck(this->m_mtxconsole);
 				this->m_qConsole.push(szMessage);
 			}
+
+			// 必须处理了才能读取下一句
+			while (this->m_qConsole.size() > 0)
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			}
+
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		} while (true);
+
+		//printf("debug> exist console thread.\n");
 	};
 
 	m_ThreadConsole = std::move(std::thread(fThread));
@@ -162,14 +174,19 @@ void DebugServer::StopConsole()
 {
 	if (m_ThreadConsole.joinable())
 	{
+		// std::cin.getline() 会忽略第一个\n所以需要放两个，要不然std::cin.getline()会读取空字符
+		std::cin.putback('q');
+		std::cin.putback('\n');
+		std::cin.putback('q');
+		std::cin.putback('\n');
 		m_ThreadConsole.join();
+		printf("debug> exist console.\n");
 	}
-
 }
 
 void DebugServer::StartRecv()
 {
-	if (m_pThreadRecv)
+	if (m_ThreadRecv.joinable())
 		return;
 
 	auto fThread = [this]() -> void {
@@ -220,15 +237,14 @@ void DebugServer::StartRecv()
 		} while (true);
 	};
 
-	m_pThreadRecv = new std::thread(fThread);
+	m_ThreadRecv = std::move(std::thread(fThread));
 }
 
 void DebugServer::StopRecv()
 {
-	if (m_pThreadRecv)
+	if (m_ThreadRecv.joinable())
 	{
-		delete m_pThreadRecv;
-		m_pThreadRecv = nullptr;
+		m_ThreadRecv.join();
 	}
 }
 
