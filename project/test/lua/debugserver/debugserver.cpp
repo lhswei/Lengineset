@@ -44,7 +44,7 @@ void DebugServer::AcceptThread()
 				}
 				else
 				{
-					std::string msg("connection already exist.");
+					std::string msg("debug> connection already exist.");
 					::send(conn, msg.c_str(), msg.length(), 0);
 					std::this_thread::sleep_for(std::chrono::milliseconds(100));
 					::closesocket(conn);
@@ -105,7 +105,7 @@ int DebugServer::StartServer(short port)
     if (port > 1024 && port < 65534)
     {
         m_nPort = port;
-		printf("listening port =  %d\n", port);
+		printf("debug> listening port =  %d\n", port);
         if (m_nSocketClient < 0)
         {
             InitServer();
@@ -371,7 +371,7 @@ void DebugServer::SetRunState(DBG_RUN_STATE st)
     }
     catch (std::logic_error &)
     {
-        printf("[exception caught]\n");
+        printf("debug> exception caught.\n");
     }
 }
 
@@ -482,6 +482,14 @@ int DebugServerWrapper::StopConsole(lua_State* L)
 	return 0;
 }
 
+int DebugServerWrapper::sleepmilliseconds(lua_State* L)
+{
+	int nsec = luaL_checkinteger(L, 1);
+	if (nsec > 0)
+		std::this_thread::sleep_for(std::chrono::milliseconds(nsec));
+	return 0;
+}
+
 L_REG_TYPE(DebugServerWrapper) DebugServerWrapper::Functions[] =
 {
     {"StartServer", &DebugServerWrapper::StartServer},
@@ -492,6 +500,7 @@ L_REG_TYPE(DebugServerWrapper) DebugServerWrapper::Functions[] =
 	{"ReadCmd", &DebugServerWrapper::ReadCmd },
 	{"StartConsole", &DebugServerWrapper::StartConsole },
 	{"StopConsole", &DebugServerWrapper::StopConsole },
+	{"slee", &DebugServerWrapper::sleepmilliseconds },
     {NULL, NULL}
 };
 

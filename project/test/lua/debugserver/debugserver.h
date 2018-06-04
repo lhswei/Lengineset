@@ -98,7 +98,7 @@ public:
 	int ReadCmd(lua_State* L);
 	int StartConsole(lua_State* L);
 	int StopConsole(lua_State* L);
-
+	int sleepmilliseconds(lua_State* L);
 	// 需要放最后，这个宏定义public成员，若放中间会改变其他成员的访问权限
 	L_DECLARE_LUA_CLASS(DebugServerWrapper);
 };
