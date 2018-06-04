@@ -23,20 +23,6 @@
 
 #pragma comment(lib, "WS2_32")
 
-#if defined(LDEBUG_BUILD_AS_DLL)	/* { */
-
-#if defined(LDEBUG_CORE) || defined(LDEUBG_LIB)	/* { */
-#define LDEBUG_API __declspec(dllexport)
-#else						/* }{ */
-#define LDEBUG_API __declspec(dllimport)
-#endif						/* } */
-
-#else				/* }{ */
-
-#define LDEBUG_API 	__declspec(dllimport)
-
-#endif				/* } */
-
 #define _TCP_MAX_CONN_WAIT          10
 #define _TCP_CHAR_IP_LEN            33
 #define _TCP_MAX_BUFFER_SIZE        (1024 * 4)

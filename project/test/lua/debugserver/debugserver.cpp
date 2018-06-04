@@ -176,6 +176,12 @@ void DebugServer::StopConsole()
 		std::cin.putback('\n');
 		std::cin.putback('q');
 		std::cin.putback('\n');
+
+		// 保证没有数据，线程才能继续
+		while (m_qConsole.size() > 0)
+		{
+			m_qConsole.pop();
+		}
 		m_ThreadConsole.join();
 		printf("debug> exist console.\n");
 	}
